@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Método Simplex — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="simplex">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade VIII · Método Simplex</div>
+        <h1>Método Simplex</h1>
+        <p class="lead">O algoritmo que gera soluções básicas viáveis cada vez melhores, até que nenhuma melhoria seja possível. Nesta página você vê cada iteração do tableau montada passo a passo — e pode rodar o seu próprio problema.</p>
+      </div>
+
+      <h2>1 · A ideia em uma frase</h2>
+      <p>O Simplex caminha de <strong>vértice em vértice</strong> pela fronteira da região factível, sempre na direção que mais aumenta a função objetivo. Para quando cheganum vértice cujos vizinhos são todos piores — é o ótimo.</p>
+
+      <div class="formula">
+        Solução básica viável inicial &nbsp;→&nbsp; <span class="hl">soluções cada vez melhores</span> &nbsp;→&nbsp; ótimo
+      </div>
+
+      <p>Como cada vértice corresponde a uma solução básica viável (SBV), e a região é convexa, a caminhada não tem "armadilhas": não existem ótimos locais que não sejam globais.</p>
+
+      <h2>2 · O protótipo: só restrições ≤ com b ≥ 0</h2>
+      <p>É o caso mais simples e o que cai com mais frequência. A partir dele a base inicial sai de graça.</p>
+
+      <ol class="step-list">
+        <li><b>Forma padrão.</b> Introduza uma variável de folga para cada restrição <code>≤</code>. Ex.: <code>2x₁ + x₂ ≤ 8</code> vira <code>2x₁ + x₂ + x₃ = 8</code>, com <code>x₃ ≥ 0</code>.</li>
+        <li><b>Base inicial.</b> As variáveis de folga são básicas; as de decisão são não-básicas (valem 0). Assim <code>x₃ = 8, x₄ = 7, …</code> e a SBV inicial é a origem.</li>
+        <li><b>Tableau.</b> Monte a matriz dos coeficientes, o vetor b e a linha do objetivo <code>z</code>.</li>
+        <li><b>Variável que entra.</b> A de coeficiente mais negativo na linha z (maior ganho). Se todos ≥ 0 → ótimo, pare.</li>
+        <li><b>Variável que sai.</b> Menor razão <code>bᵢ / aᵢₖ</code> entre as linhas com <code>aᵢₖ &gt; 0</code>. Se nenhuma tiver <code>aᵢₖ &gt; 0</code> → objetivo ilimitado.</li>
+        <li><b>Pivotear.</b> Divida a linha do pivô para o pivô virar 1; zere os demais elementos da coluna do pivô.</li>
+        <li><b>Repetir</b> a partir do passo 4.</li>
+      </ol>
+
+      <h2>3 · Laboratório — tableau passo a passo</h2>
+      <p>O exemplo: <code>max z = 3x₁ + 2x₂</code> sujeito a <code>x₁ + x₂ ≤ 4</code>, <code>x₁ + 3x₂ ≤ 6</code>, <code>x ≥ 0</code>. Escolha um problema pronto ou digite o seu (duas variáveis, restrições ≤).</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Simplex interativo</span>
+          <span class="lab-hint">avança uma iteração por vez</span>
+        </div>
+        <div class="lab-body">
+          <div class="chips" id="spChips" style="margin-bottom:16px">
+            <button class="chip on" data-p="demo">Exemplo do site</button>
+            <button class="chip" data-p="fazendeiro">Fazendeiro</button>
+            <button class="chip" data-p="brinquedos">Brinquedos</button>
+            <button class="chip" data-p="transformador">Transformadores</button>
+            <button class="chip" data-p="camisas">Camisas (múltiplas sol.)</button>
+            <button class="chip" data-p="ilimitado">Ilimitado</button>
+          </div>
+
+          <div class="lab-grid" style="grid-template-columns: 1fr 260px">
+            <div>
+              <div id="spHead" style="margin-bottom:12px;font-size:14px;color:var(--ink-3)"></div>
+              <div class="tbl-wrap" style="margin:0"><div id="spTable"></div></div>
+              <div id="spExplain" class="note" style="margin-top:14px">
+                <span class="callout-title">Leitura da iteração</span>
+                <span id="spExplainTxt">Clique em <b>Iterar</b> para dar o próximo passo.</span>
+              </div>
+              <div id="spSol" class="tip" style="margin-top:10px;display:none">
+                <span class="callout-title">Solução atual</span>
+                <span id="spSolTxt"></span>
+              </div>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Iteração</span><span class="val" id="spIter">0</span></div>
+                <input type="range" id="spSlider" min="0" max="0" value="0">
+              </div>
+              <div class="btn-row">
+                <button class="btn primary" id="spNext">Iterar →</button>
+                <button class="btn" id="spPrev">←</button>
+                <button class="btn" id="spReset">Reiniciar</button>
+              </div>
+              <div class="ctrl" style="margin-top:18px">
+                <div class="ctrl-label"><span>Variável que entra</span><span class="val" id="spIn">—</span></div>
+                <div class="ctrl-label"><span>Variável que sai</span><span class="val" id="spOut">—</span></div>
+                <div class="ctrl-label"><span>Valor de z</span><span class="val" id="spZ">—</span></div>
+              </div>
+              <div id="spStatus" class="tip" style="margin-top:6px">
+                <span class="callout-title">Estado</span>
+                <span id="spStatusTxt">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>4 · Como ler o tableau</h2>
+      <div class="tbl-wrap">
+        <table class="tab-simplex">
+          <thead>
+            <tr><th class="basic">Base</th><th>x₁</th><th>x₂</th><th>x₃</th><th>x₄</th><th>b</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>x₃</td><td>1</td><td>1</td><td>1</td><td>0</td><td>4</td></tr>
+            <tr><td>x₄</td><td>1</td><td>3</td><td>0</td><td>1</td><td>6</td></tr>
+            <tr class="obj-row"><td>z</td><td>-3</td><td>-2</td><td>0</td><td>0</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="small" style="padding-left:18px">
+        <li><b>Coluna "Base"</b>: variáveis básicas de cada linha. O valor delas está na coluna <code>b</code>.</li>
+        <li><b>Colunas das variáveis</b>: coeficientes. As colunas das básicas formam a identidade.</li>
+        <li><b>Linha z</b>: coeficientes da função objetivo <em>com sinal trocado</em>. Coeficiente negativo = aquela variável, se entrar, aumenta z.</li>
+        <li><b>b</b>: valor atual da variável básica da linha (e na linha z, o valor de z com sinal trocado).</li>
+      </ul>
+
+      <div class="note">
+        <span class="callout-title">Por que a linha z tem sinal trocado?</span>
+        Escrevemos <code>z − 3x₁ − 2x₂ = 0</code> e colocamos essa linha no tableau. Um coeficiente <b>negativo</b> significa que aumentar aquela variável (que hoje vale 0) aumenta z. Quando não houver mais negativos, nenhuma direção melhora → ótimo.
+      </div>
+
+      <h2>5 · Casos especiais</h2>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <span class="card-tag" style="color:var(--blue)">Empate na entrada</span>
+          <h4>Duas candidatas</h4>
+          <p class="small">Empate no coeficiente mais negativo da linha z. Escolha <b>arbitrariamente</b> — só pode levar a um caminho mais longo ou mais curto até o ótimo.</p>
+          <p class="small muted" style="margin:0">Teste com o preset "Transformadores": os dois coeficientes valem, inicialmente, o mesmo.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag" style="color:var(--warn)">Empate na saída</span>
+          <h4>Degeneração</h4>
+          <p class="small">Duas linhas com a mesma razão mínima. Escolha arbitrariamente. Pode surgir uma <b>solução básica degenerada</b> (alguma básica = 0) e, em raros casos, ciclagem.</p>
+          <p class="small muted" style="margin:0">Regra de Bland existe para evitar ciclagem; na prova, apenas mencione que a escolha é arbitrária.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag">Soluções múltiplas</span>
+          <h4>Coeficiente 0 no ótimo</h4>
+          <p class="small">Se ao atingir o ótimo alguma variável não-básica tiver coeficiente <b>0</b> na linha z, ela pode entrar sem alterar z. Isso gera infinitas soluções ótimas (uma aresta inteira).</p>
+          <p class="small muted" style="margin:0">Preset "Camisas": o ótimo tem uma aresta.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag" style="color:var(--bad)">Ilimitado</span>
+          <h4>Coluna sem positivo</h4>
+          <p class="small">A variável que entra tem coeficiente negativo em z, mas <b>nenhum</b> <code>aᵢₖ &gt; 0</code> na coluna. Ela pode crescer sem violar restrições → z → ∞. Pare e declare ilimitado.</p>
+          <p class="small muted" style="margin:0">Preset "Ilimitado".</p>
+        </div>
+      </div>
+
+      <div class="danger">
+        <span class="callout-title">Inviabilidade (pré-Simplex)</span>
+        Se o problema tem restrições <code>≥</code> ou <code>=</code>, a base inicial não é óbvia. Nesse caso usa-se <b>variáveis artificiais</b> (M Grande ou duas fases). Se ao final da fase 1 alguma artificial permanece positiva, o problema é <b>inviável</b>. Isso está detalhado na <a href="duasfases.html">próxima página</a>.
+      </div>
+
+      <h2>6 · Simplex × Gráfica</h2>
+      <p>Os dois métodos resolvem o mesmo problema e chegam ao mesmo número. Vale fazer a ponte para conferir sua resposta: cada SBV do Simplex é um vértice da região na gráfica.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ponto de vista</th><th>Gráfica</th><th>Simplex</th></tr></thead>
+          <tbody>
+            <tr><td>Ponto</td><td>Vértice da região</td><td>Solução básica viável</td></tr>
+            <tr><td>Movimento</td><td>Andar na fronteira</td><td>Trocar uma variável na base</td></tr>
+            <tr><td>Parada</td><td>Curva de nível não melhora</td><td>Linha z sem coeficientes negativos</td></tr>
+            <tr><td>Múltiplos ótimos</td><td>Aresta com mesma curva de nível</td><td>Variável não-básica com coeficiente 0</td></tr>
+            <tr><td>Ilimitado</td><td>Região escapa na direção do gradiente</td><td>Coluna que entra sem coeficiente positivo</td></tr>
+            <tr><td>Inviável</td><td>Interseção vazia</td><td>Artificial não-zera na fase 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+/* ============ engine Simplex (max, restrições ≤) ============ */
+function buildSimplex(obj, cons) {
+  // cons: [{a,b,c}] abordagem com variáveis de folga
+  const n = obj.length, m = cons.length;
+  const names = [];
+  for (let j = 0; j < n; j++) names.push('x' + '₁₂₃₄₅₆₇'[j]);
+  for (let i = 0; i < m; i++) names.push('s' + '₁₂₃₄₅₆₇'[i]);
+
+  // tableau aumentado: m+1 linhas, n+m+1 colunas (últimas = b)
+  let T = [];
+  for (let i = 0; i < m; i++) {
+    const row = [];
+    for (let j = 0; j < n; j++) row.push(cons[i][j]);
+    for (let j = 0; j < m; j++) row.push(i === j ? 1 : 0);
+    row.push(cons[i][n]); // b
+    T.push(row);
+  }
+  const zrow = [];
+  for (let j = 0; j < n; j++) zrow.push(-obj[j]);
+  for (let j = 0; j < m; j++) zrow.push(0);
+  zrow.push(0);
+  T.push(zrow);
+
+  let basic = [];
+  for (let i = 0; i < m; i++) basic.push(n + i);
+
+  const steps = [];
+  let iter = 0;
+  const MAXI = 40;
+  let status = 'running';
+  let message = '';
+
+  function snapshot() {
+    steps.push({
+      T: T.map(r => r.slice()),
+      basic: basic.slice(),
+      status, message, iter,
+    });
+  }
+  snapshot();
+
+  while (iter < MAXI) {
+    const zr = T[m];
+    // entra: mais negativo
+    let enter = -1, best = -1e-9;
+    for (let j = 0; j < n + m; j++) {
+      if (zr[j] < best) { best = zr[j]; enter = j; }
+    }
+    let enterTie = false;
+    if (enter !== -1) {
+      enterTie = zr.some((v, j) => j !== enter && Math.abs(v - best) < 1e-9);
+    }
+    if (enter === -1) {
+      status = 'optimal';
+      // multiple?
+      const zeroNb = [];
+      for (let j = 0; j < n + m; j++) {
+        if (!basic.includes(j) && Math.abs(zr[j]) < 1e-9) zeroNb.push(j);
+      }
+      if (zeroNb.length) {
+        status = 'multiple';
+        message = `Ótimo atingido, mas ${zeroNb.map(j => names[j]).join(', ')} tem coeficiente 0 na linha z e é não-básica: existem infinitas soluções ótimas (aresta ótima).`;
+      } else {
+        message = 'Todos os coeficientes de z são ≥ 0: nenhuma variável não-básica melhora a solução. Ótimo encontrado.';
+      }
+      // O tableau atual JÁ é ótimo (o pivot que trouxe até aqui foi registrado no
+      // snapshot anterior). Marcamos o status nele em vez de criar um snapshot repetido.
+      steps[steps.length - 1].status = status;
+      steps[steps.length - 1].message = message;
+      break;
+    }
+    // sai: razão mínima
+    let leave = -1, bestRatio = Infinity, tie = false;
+    for (let i = 0; i < m; i++) {
+      const a = T[i][enter];
+      if (a > 1e-9) {
+        const r = T[i][n + m] / a;
+        if (r < bestRatio - 1e-12) { bestRatio = r; leave = i; tie = false; }
+        else if (Math.abs(r - bestRatio) < 1e-12) { tie = true; }
+      }
+    }
+    if (leave === -1) {
+      status = 'unbounded';
+      message = `A coluna de ${names[enter]} não tem coeficiente positivo nas restrições: ${names[enter]} pode crescer indefinidamente. Objetivo ilimitado.`;
+      steps[steps.length - 1].status = 'unbounded';
+      steps[steps.length - 1].message = message;
+      break;
+    }
+
+    // pivô
+    const piv = T[leave][enter];
+    const prevBasic = names[basic[leave]];
+    for (let j = 0; j <= n + m; j++) T[leave][j] /= piv;
+    for (let i = 0; i <= m; i++) {
+      if (i === leave) continue;
+      const f = T[i][enter];
+      if (Math.abs(f) < 1e-12) continue;
+      for (let j = 0; j <= n + m; j++) T[i][j] -= f * T[leave][j];
+    }
+    basic[leave] = enter;
+    iter++;
+
+    const degenerate = Math.abs(bestRatio) < 1e-12;
+    const meta = {
+      enter, leave, prevBasic, tie, degenerate, ratio: bestRatio,
+      enterName: names[enter], leaveName: prevBasic,
+    };
+    status = 'running';
+    message = `${names[enter]} entra (coeficiente ${PL.nfmt(best)} na linha z${enterTie ? ', empate na entrada — escolha arbitrária' : ''}). ${prevBasic} sai (razão mínima ${PL.nfmt(bestRatio)})${tie ? ', empate na saída: escolha arbitrária, solução degenerada' : ''}.`;
+    // O pivot foi escolhido no tableau anterior: registramos a decisão lá.
+    const prev = steps[steps.length - 1];
+    prev.decision = { enter, leave, ratio: bestRatio, enterName: names[enter], leaveName: prevBasic, tie, degenerate, enterTie };
+    prev.message = message;
+    status = 'running';
+    steps.push({
+      T: T.map(r => r.slice()),
+      basic: basic.slice(),
+      status, message: 'Tableau atualizado após o pivot.', iter,
+    });
+  }
+
+  if (status === 'running' && iter >= MAXI) {
+    status = 'cycled';
+    message = 'Limite de iterações atingido (possível ciclagem).';
+    steps[steps.length - 1].status = status;
+    steps[steps.length - 1].message = message;
+  }
+
+  const solution = basic.map((b, i) => ({
+    name: names[b],
+    value: T[i][n + m],
+  }));
+
+  // Monta um "replay": cada quadro = { tabela, coluna que entra, linha que sai, textos }
+  // para que o usuário veja a decisão ANTES do pivot.
+  const frames = [];
+  for (let k = 0; k < steps.length; k++) {
+    const s = steps[k];
+    const isLast = k === steps.length - 1;
+    frames.push({
+      T: s.T,
+      basic: s.basic,
+      status: k < steps.length - 1 ? 'decide' : s.status,
+      message: k < steps.length - 1
+        ? `Estado atual (iteração ${k}). ${s.decision ? s.decision.enterName + ' entra, ' + s.decision.leaveName + ' sai.' : ''}`
+        : s.message,
+      decision: s.decision || null,
+      iter: k,
+      // para exibir a decisão a tomar neste quadro
+      pending: (s.status === 'running') ? computePending(s, n, m, names) : null,
+    });
+  }
+
+  // número final de vértices percorridos = len(frames)-1
+  return { names, steps, frames, n, m, solution, finalZ: T[m][n + m] };
+}
+
+function computePending(s, n, m, names) {
+  const cols = n + m;
+  const zr = s.T[m];
+  let enter = -1, best = -1e-9;
+  for (let j = 0; j < cols; j++) if (zr[j] < best) { best = zr[j]; enter = j; }
+  if (enter === -1) return null;
+  let leave = -1, br = Infinity, tie = false;
+  for (let i = 0; i < m; i++) {
+    if (s.T[i][enter] > 1e-9) {
+      const r = s.T[i][cols] / s.T[i][enter];
+      if (r < br - 1e-12) { br = r; leave = i; tie = false; }
+      else if (Math.abs(r - br) < 1e-12) tie = true;
+    }
+  }
+  return {
+    enter, leave, best, ratio: br, tie,
+    enterName: names[enter],
+    leaveName: leave >= 0 ? names[s.basic[leave]] : null,
+    unbounded: leave === -1,
+  };
+}
+
+PL.nfmt = function (v) {
+  if (Math.abs(v) < 1e-9) return '0';
+  const r = Math.round(v * 1000) / 1000;
+  return Number.isInteger(r) ? String(r) : r.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+};
+
+/* ============ UI ============ */
+(function () {
+  const PRESETS = {
+    demo: { obj: [3, 2], cons: [[1, 1, 4], [1, 3, 6]], label: 'max z = 3x₁ + 2x₂' },
+    fazendeiro: { obj: [5, 2], cons: [[1, 0, 3], [0, 1, 4], [1, 2, 9]], label: 'max z = 5x₁ + 2x₂' },
+    brinquedos: { obj: [12, 60], cons: [[0.25, 0.5, 36], [0.1, 0.75, 22], [0.1, 0.4, 15]], label: 'max z = 12x₁ + 60x₂' },
+    transformador: { obj: [1, 1], cons: [[2, 1, 8], [1, 2, 7], [0, 1, 2]], label: 'max z = x₁ + x₂' },
+    camisas: { obj: [1, 2], cons: [[1, 0, 3], [0, 1, 4], [1, 2, 9]], label: 'max z = x₁ + 2x₂  (objetivo ∥ restrição)' },
+    ilimitado: { obj: [3, 2], cons: [[-1, 1, 2]], label: 'max z = 3x₁ + 2x₂  (s.a −x₁ + x₂ ≤ 2)' },
+  };
+
+  let model = null, cur = 0, presetName = 'demo';
+
+  function load(name) {
+    presetName = name;
+    const p = PRESETS[name];
+    model = buildSimplex(p.obj, p.cons);
+    model.label = p.label;
+    cur = 0;
+    document.getElementById('spSlider').max = model.frames.length - 1;
+    document.getElementById('spSlider').value = 0;
+    render();
+  }
+
+  function render() {
+    const fr = model.frames[cur];
+    const st = { T: fr.T, basic: fr.basic, status: fr.status, message: fr.message, decision: fr.decision };
+    const n = model.n, m = model.m, names = model.names;
+    const cols = n + m;
+
+    // header
+    document.getElementById('spHead').innerHTML =
+      `<b>${model.label}</b> &nbsp;·&nbsp; ${m} restrições, ${n} variáveis + ${m} folgas`;
+
+    // tabela
+    let html = '<table class="tab-simplex"><thead><tr><th class="basic">Base</th>';
+    for (let j = 0; j < cols; j++) html += `<th>${names[j]}</th>`;
+    html += '<th>b</th><th style="text-align:left">razão</th></tr></thead><tbody>';
+
+    // A decisão registrada neste passo é a que SERÁ tomada (coluna que entra / linha que sai).
+    // A decisão a TOMAR neste tableau (pré-pivot).
+    const pend = fr.pending;
+    const enterCol = pend ? pend.enter : null;
+    const leaveRow = pend ? pend.leave : null;
+
+    for (let i = 0; i < m; i++) {
+      const isOut = i === leaveRow;
+      html += `<tr class="${isOut ? 'row-out' : ''}">`;
+      html += `<td class="basic">${names[st.basic[i]]}</td>`;
+      for (let j = 0; j < cols; j++) {
+        const isPiv = isOut && j === enterCol;
+        const cls = isPiv ? 'piv' : (j === enterCol ? 'col-in' : '');
+        html += `<td class="${cls}">${PL.nfmt(st.T[i][j])}</td>`;
+      }
+      html += `<td>${PL.nfmt(st.T[i][cols])}</td>`;
+      let ratioTxt = '';
+      if (enterCol != null) {
+        ratioTxt = st.T[i][enterCol] > 1e-9
+          ? PL.nfmt(st.T[i][cols] / st.T[i][enterCol]) + (isOut ? ' ◀ sai' : '')
+          : '—';
+      }
+      html += `<td style="text-align:left;color:${isOut ? '#b42318' : '#8b98a5'};font-size:12px">${ratioTxt}</td>`;
+      html += '</tr>';
+    }
+    // linha z
+    html += '<tr class="obj-row"><td class="basic">z</td>';
+    for (let j = 0; j < cols; j++) {
+      html += `<td class="${j === enterCol ? 'col-in' : ''}">${PL.nfmt(st.T[m][j])}</td>`;
+    }
+    html += `<td>${PL.nfmt(st.T[m][cols])}</td><td></td></tr>`;
+    html += '</tbody></table>';
+    document.getElementById('spTable').innerHTML = html;
+
+    // painel
+    document.getElementById('spIter').textContent = cur;
+    document.getElementById('spSlider').value = cur;
+    document.getElementById('spExplainTxt').innerHTML = st.message || 'Estado inicial: base formada pelas folgas, x = 0.';
+
+    // painel: decisão a tomar neste tableau
+    const outName = pend ? (pend.leaveName || '(nenhuma — ilimitado)') : '—';
+    document.getElementById('spIn').textContent = pend ? pend.enterName : '—';
+    document.getElementById('spOut').textContent = outName;
+    document.getElementById('spZ').textContent = PL.nfmt(st.T[m][cols]);
+
+    // solução atual: básicas com valor em b, não-básicas = 0
+    const solBox = document.getElementById('spSol');
+    const solTxt = document.getElementById('spSolTxt');
+    solBox.style.display = 'block';
+    const parts = [];
+    for (let j = 0; j < cols; j++) {
+      const bi = st.basic.indexOf(j);
+      const val = bi >= 0 ? st.T[bi][cols] : 0;
+      if (j < n || Math.abs(val) > 1e-9) parts.push(`${names[j]} = ${PL.nfmt(val)}`);
+    }
+    solTxt.innerHTML = parts.join(' · ') + ` &nbsp;<b style="color:var(--accent)">z = ${PL.nfmt(st.T[m][cols])}</b>`;
+
+    const e2 = enterCol != null ? enterCol : -1;
+
+    const sb = document.getElementById('spStatus');
+    const stx = document.getElementById('spStatusTxt');
+    if (st.status === 'optimal') { sb.className = 'tip'; stx.innerHTML = '<b>Ótimo.</b> ' + st.message; }
+    else if (st.status === 'multiple') { sb.className = 'warn'; stx.innerHTML = '<b>Múltiplos ótimos.</b> ' + st.message; }
+    else if (st.status === 'unbounded') { sb.className = 'danger'; stx.innerHTML = '<b>Ilimitado.</b> ' + st.message; }
+    else if (st.status === 'cycled') { sb.className = 'warn'; stx.innerHTML = '<b>Atenção.</b> ' + st.message; }
+    else { sb.className = 'note'; stx.innerHTML = 'Em andamento. Próxima: entra <b>' + (e2 >= 0 ? names[e2] : '—') + '</b>, sai <b>' + outName + '</b>.'; }
+
+    document.getElementById('spNext').disabled = cur >= model.frames.length - 1;
+    document.getElementById('spPrev').disabled = cur <= 0;
+  }
+
+  document.getElementById('spNext').addEventListener('click', () => { if (cur < model.frames.length - 1) { cur++; render(); } });
+  document.getElementById('spPrev').addEventListener('click', () => { if (cur > 0) { cur--; render(); } });
+  document.getElementById('spReset').addEventListener('click', () => { cur = 0; render(); });
+  document.getElementById('spSlider').addEventListener('input', e => { cur = +e.target.value; render(); });
+
+  document.querySelectorAll('#spChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#spChips .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      load(c.dataset.p);
+    });
+  });
+
+  load('demo');
+})();
+</script>
+</body>
+</html>

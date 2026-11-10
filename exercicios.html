@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exercícios resolvidos — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="exercicios">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Treino · problemas do material</div>
+        <h1>Exercícios resolvidos</h1>
+        <p class="lead">Os problemas clássicos que o professor usou em aula, resolvidos por inteiro: formulação, tableau e resposta. Tente antes de abrir a solução.</p>
+      </div>
+
+      <!-- 1 -->
+      <h2>1 · O fazendeiro</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Um fazendeiro quer otimizar as plantações de arroz e milho. O lucro é $5 por unidade de área de arroz e $2 por unidade de área de milho. As áreas não devem passar de 3 (arroz) e 4 (milho). O consumo total de homens-hora não deve ultrapassar 9: cada área de arroz consome 1 homem-hora e cada área de milho consome 2.</p>
+      </div>
+      <details class="answer-reveal" open>
+        <summary>Solução completa</summary>
+        <p><b>Variáveis:</b> x₁ = área de arroz, x₂ = área de milho.</p>
+        <div class="formula" style="font-size:1rem">
+          max z = 5x₁ + 2x₂<br>
+          s.a &nbsp; x₁ ≤ 3 &nbsp;·&nbsp; x₂ ≤ 4 &nbsp;·&nbsp; x₁ + 2x₂ ≤ 9 &nbsp;·&nbsp; x₁, x₂ ≥ 0
+        </div>
+        <p><b>Tableau inicial</b> (folgas s₁, s₂, s₃):</p>
+        <div class="tbl-wrap"><table class="tab-simplex">
+          <thead><tr><th class="basic">Base</th><th>x₁</th><th>x₂</th><th>s₁</th><th>s₂</th><th>s₃</th><th>b</th></tr></thead>
+          <tbody>
+            <tr><td>s₁</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>3</td></tr>
+            <tr><td>s₂</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>4</td></tr>
+            <tr><td>s₃</td><td>1</td><td>2</td><td>0</td><td>0</td><td>1</td><td>9</td></tr>
+            <tr class="obj-row"><td>z</td><td>-5</td><td>-2</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          </tbody>
+        </table></div>
+        <p><b>Iteração 1:</b> entra x₁ (mais negativo, −5). Razões: 3/1 = 3, — , 9/1 = 9. Sai s₁ (razão 3). Pivô = 1.<br>
+        Após pivotar: base {x₁, s₂, s₃}, z = 15.</p>
+        <p><b>Iteração 2:</b> linha z tem x₂ = −2. Razões: s₂: 4/1 = 4; s₃: 6/2 = 3. Sai s₃. Pivô = 2.<br>
+        Após pivotar: base {x₁, s₂, x₂}, z = 21. Todos os coeficientes de z ≥ 0 → ótimo.</p>
+        <p><b>Resposta:</b> x₁ = 3, x₂ = 3, <b>z = 21</b>.</p>
+      </details>
+
+      <!-- 2 -->
+      <h2>2 · Produção de brinquedos (Venix)</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Lucro de R$12 por carrinho e R$60 por triciclo. Recursos semanais: usinagem 36 h (15 min carrinho, 30 min triciclo), pintura 22 h (6 min, 45 min), montagem 15 h (6 min, 24 min).</p>
+      </div>
+      <details class="answer-reveal">
+        <summary>Solução completa</summary>
+        <p>Convertendo minutos para horas:</p>
+        <div class="formula" style="font-size:1rem">
+          max z = 12x₁ + 60x₂<br>
+          s.a<br>
+          0,25x₁ + 0,50x₂ ≤ 36 &nbsp;(usinagem)<br>
+          0,10x₁ + 0,75x₂ ≤ 22 &nbsp;(pintura)<br>
+          0,10x₁ + 0,40x₂ ≤ 15 &nbsp;(montagem)<br>
+          x₁, x₂ ≥ 0
+        </div>
+        <p>Multiplicando as duas últimas linhas por 20 e 10 para limpar decimais (opcional, mas ajuda):</p>
+        <div class="formula" style="font-size:1rem">
+          x₁ + 2x₂ ≤ 144 &nbsp;·&nbsp; x₁ + 7,5x₂ ≤ 220 &nbsp;·&nbsp; x₁ + 4x₂ ≤ 150
+        </div>
+        <p><b>Solução ótima:</b> x₁ = 70 carrinhos, x₂ = 20 triciclos, <b>z = R$ 2.040,00</b> por semana.</p>
+        <p class="small muted">Confira no <a href="simplex.html">laboratório do Simplex</a>, preset "Brinquedos".</p>
+      </details>
+
+      <!-- 3 -->
+      <h2>3 · Fabricação de transformadores</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Dois transformadores T1 e T2. T1 usa 2 lotes de aço e 1 de verniz. T2 usa 1 de aço, 2 de verniz e 1 de parafuso. Disponíveis: 8 lotes de aço, 7 de verniz, 2 de parafusos. Lucro de R$1 por lote de qualquer tipo.</p>
+      </div>
+      <details class="answer-reveal">
+        <summary>Solução completa</summary>
+        <div class="formula" style="font-size:1rem">
+          max z = x₁ + x₂<br>
+          s.a &nbsp; 2x₁ + x₂ ≤ 8 &nbsp;·&nbsp; x₁ + 2x₂ ≤ 7 &nbsp;·&nbsp; x₂ ≤ 2 &nbsp;·&nbsp; x₁, x₂ ≥ 0
+        </div>
+        <p><b>Resolução:</b> a primeira iteração tem <b>empate na entrada</b> (z tem −1 em x₁ e −1 em x₂). Escolha arbitrária: x₁.</p>
+        <p>Pivotando com x₁: base {x₁, s₂, s₃}. Depois entra x₂ e sai s₂. Ótimo em <b>x₁ = 3, x₂ = 2, z = 5</b>.</p>
+        <div class="warn" style="margin-top:12px">
+          <span class="callout-title">Ponto de prova</span>
+          O empate na entrada não muda a resposta — só pode encurtar ou alongar o caminho. Diga isso na justificativa.
+        </div>
+      </details>
+
+      <!-- 4 -->
+      <h2>4 · Produção de camisas esportivas (soluções múltiplas)</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Uma confecção produz camisas. Duas restrições de recursos e uma função objetivo cujos coeficientes são <b>proporcionais</b> a uma das restrições — o caso clássico de múltiplos ótimos.</p>
+      </div>
+      <details class="answer-reveal">
+        <summary>Solução completa e como reconhecer</summary>
+        <p>Use o modelo: <code>max z = x₁ + 2x₂</code> s.a <code>x₁ ≤ 3</code>, <code>x₂ ≤ 4</code>, <code>x₁ + 2x₂ ≤ 9</code>, <code>x ≥ 0</code>.</p>
+        <p>Os vértices são (0,0), (3,0), (3,3), (1,4), (0,4). Calculando:</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Vértice</th><th>z = x₁ + 2x₂</th></tr></thead>
+          <tbody>
+            <tr><td>(0, 0)</td><td>0</td></tr>
+            <tr><td>(3, 0)</td><td>3</td></tr>
+            <tr><td>(3, 3)</td><td>9</td></tr>
+            <tr><td>(1, 4)</td><td><b>9</b></td></tr>
+            <tr><td>(0, 4)</td><td>8</td></tr>
+          </tbody>
+        </table></div>
+        <p>Dois vértices empatam em z = 9, e a aresta entre (3,3) e (1,4) é toda ótima: a reta <code>x₁ + 2x₂ = 9</code> coincide com a restrição. <b>Infinitas soluções ótimas</b>, todas com z = 9.</p>
+        <p class="small">No Simplex, após atingir o ótimo o coeficiente de x₁ (não-básica) na linha z é 0 — é exatamente esse o sinal de múltiplos ótimos.</p>
+      </details>
+
+      <!-- 5 -->
+      <h2>5 · Compra e refino de petróleo (minimização, duas fases)</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Minimizar <code>f = 8x₁ + 12x₂</code> com <code>x₁ + 2x₂ ≥ 5</code> e <code>x₁ + x₂ ≥ 3</code>. Restrições <code>≥</code> → é preciso excesso e variável artificial.</p>
+      </div>
+      <details class="answer-reveal">
+        <summary>Solução completa</summary>
+        <p>Forma com excessos e artificiais:</p>
+        <div class="formula" style="font-size:1rem">
+          min 8x₁ + 12x₂<br>
+          x₁ + 2x₂ − e₁ + a₁ = 5<br>
+          x₁ + x₂ − e₂ + a₂ = 3<br>
+          x, e, a ≥ 0
+        </div>
+        <p><b>Fase 1:</b> minimizar a₁ + a₂. Após as iterações, as artificiais chegam a zero → base viável formada por x₁ e x₂.</p>
+        <p><b>Fase 2:</b> com a base viável, otimiza-se o f real. O ótimo ocorre em <b>x₁ = 1, x₂ = 2</b>, com <b>f = 8·1 + 12·2 = 32</b>.</p>
+        <p class="small muted">Percorra cada tableau no <a href="duasfases.html">simulador de duas fases</a>.</p>
+      </details>
+
+      <!-- 6 -->
+      <h2>6 · Despacho econômico (modelagem não-linear → atenção)</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Duas usinas térmicas com custos <code>C₁ = 0,01x₁² − 10x₁ + 5000</code> e <code>C₂ = 0,005x₂² − 3x₂ + 500</code>, capacidades 1000 MW e 700 MW, demanda de 1100 MW. Minimizar o custo total.</p>
+      </div>
+      <details class="answer-reveal">
+        <summary>Como formular e por que não é Simplex</summary>
+        <p>Modelo:</p>
+        <div class="formula" style="font-size:1rem">
+          min f(x) = (0,01x₁² − 10x₁ + 5000) + (0,005x₂² − 3x₂ + 500)<br>
+          s.a &nbsp; x₁ ≤ 1000 &nbsp;·&nbsp; x₂ ≤ 700 &nbsp;·&nbsp; x₁ + x₂ = 1100 &nbsp;·&nbsp; x ≥ 0
+        </div>
+        <p><b>Atenção:</b> a função objetivo é <b>quadrática</b>, não linear. Portanto <em>não</em> se aplica o Simplex — é um problema de programação não-linear (com restrições lineares). Nas provas, esse exemplo costuma aparecer para marcar a distinção entre PL e PNL.</p>
+        <p>Se fosse linearizado, tratar-se-ia de um transporte/despacho com restrição de igualdade, que o Simplex resolveria após introduzir variável artificial para a igualdade.</p>
+      </details>
+
+      <!-- 7 -->
+      <h2>7 · Resolva o sistema linear</h2>
+      <div class="card" style="margin-bottom:0">
+        <p><b>Enunciado.</b> Resolva por eliminação de Gauss:</p>
+        <div class="formula" style="font-size:1rem;margin-bottom:0">
+          2x₁ + x₂ − x₃ = 8<br>
+          −3x₁ − x₂ + 2x₃ = −11<br>
+          −2x₁ + x₂ + 2x₃ = −3
+        </div>
+      </div>
+      <details class="answer-reveal">
+        <summary>Solução completa</summary>
+        <p>Matriz aumentada e eliminação:</p>
+        <div class="tbl-wrap"><table class="tab-simplex">
+          <thead><tr><th class="basic">&nbsp;</th><th>x₁</th><th>x₂</th><th>x₃</th><th>b</th></tr></thead>
+          <tbody>
+            <tr><td>L1</td><td>2</td><td>1</td><td>-1</td><td>8</td></tr>
+            <tr><td>L2</td><td>-3</td><td>-1</td><td>2</td><td>-11</td></tr>
+            <tr><td>L3</td><td>-2</td><td>1</td><td>2</td><td>-3</td></tr>
+          </tbody>
+        </table></div>
+        <p>Com pivô a₁₁ = 2: m₂₁ = −3/2, m₃₁ = −1. Após eliminar x₁ de L2 e L3, o sistema fica triangular e a substituição retroativa dá:</p>
+        <div class="formula" style="font-size:1rem">
+          <b>x₁ = 2, x₂ = 3, x₃ = −1</b>
+        </div>
+        <p class="small">Verificação no resíduo: b − A·x = 0. Use o <a href="sistemas.html">simulador de Gauss</a> para conferir passo a passo.</p>
+      </details>
+
+      <h2>8 · Perguntas de teoria (resposta curta)</h2>
+
+      <details class="answer-reveal">
+        <summary>Por que a região factível de um PPL é convexa?</summary>
+        <p>Porque é a interseção de semiplanos (cada restrição) com os semiplanos de não-negatividade. Cada semiplano é convexo, e a interseção de conjuntos convexos é convexa.</p>
+      </details>
+
+      <details class="answer-reveal">
+        <summary>Por que o Simplex só visita vértices?</summary>
+        <p>Porque se existe solução ótima, existe uma em vértice (consequência da convexidade e da linearidade de f). E cada vértice corresponde a uma solução básica viável, que o tableau representa diretamente.</p>
+      </details>
+
+      <details class="answer-reveal">
+        <summary>Se uma variável não-básica tem coeficiente 0 na linha z no ótimo, o que significa?</summary>
+        <p>Que ela pode entrar na base sem alterar z. Isso gera uma família de soluções ótimas — múltiplos ótimos (uma aresta ou face ótima).</p>
+      </details>
+
+      <details class="answer-reveal">
+        <summary>Quando usar duas fases em vez do protótipo?</summary>
+        <p>Quando não há base inicial óbvia: restrições <code>≥</code> ou <code>=</code>. O protótipo só funciona com <code>≤</code> e <code>b ≥ 0</code>, em que as folgas formam a base inicial.</p>
+      </details>
+
+      <details class="answer-reveal">
+        <summary>Direto ou iterativo — qual escolher?</summary>
+        <p>Depende. Diretos são exatos mas sofrem arredondamento em sistemas grandes; iterativos são econômicos e autocorretivos, mas exigem convergência. Não há vencedor a priori — analisa-se a esparsidade e o porte.</p>
+      </details>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>PL.boot();</script>
+</body>
+</html>

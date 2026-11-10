@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topologia, Weierstrass e separação — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="weierstrass">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade V · Fundamentação teórica</div>
+        <h1>Topologia, Weierstrass e separação</h1>
+        <p class="lead">A convexidade sozinha não garante que a solução ótima exista. Para isso precisamos de mais: fechamento, limitação e continuidade. É o Teorema de Weierstrass. E a separação de conjuntos é o que sustenta as condições de otimalidade.</p>
+      </div>
+
+      <h2>1 · Vocabulário topológico</h2>
+      <p>Antes dos teoremas, os termos. Todos são mais fáceis de lembrar com a imagem mental correta.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Interior, fronteira e exterior</span>
+          <span class="lab-hint">passe o mouse / toque no plano</span>
+        </div>
+        <div class="lab-body">
+          <div class="canvas-wrap">
+            <canvas id="cvTopo" style="height:380px"></canvas>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#15803d"></i>interior</span>
+            <span><i class="dot" style="background:#b45309"></i>fronteira</span>
+            <span><i class="dot" style="background:#8b98a5"></i>exterior</span>
+          </div>
+          <p class="small muted" style="margin-top:10px" id="topoTxt">O conjunto S é o disco com um "bico" — repare que ele não é convexo. A fronteira é a curva; o interior é o miolo.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Interior (int S)</h4>
+          <p class="small" style="margin:0">Pontos em volta dos quais existe uma bolinha inteiramente contida em S. São os pontos "folgados", sem contato com o exterior.</p>
+        </div>
+        <div class="card">
+          <h4>Fronteira (∂S)</h4>
+          <p class="small" style="margin:0">Pontos onde toda bolinha toca tanto S quanto o seu complemento. É a "casca". Num poliedro factível, os vértices estão na fronteira.</p>
+        </div>
+        <div class="card">
+          <h4>Fecho (S̄ ou cl S)</h4>
+          <p class="small" style="margin:0">S unido com sua fronteira. Um conjunto é <strong>fechado</strong> quando S = S̄, isto é, quando contém toda a sua fronteira.</p>
+        </div>
+        <div class="card">
+          <h4>Limitado</h4>
+          <p class="small" style="margin:0">S cabe dentro de alguma bola de raio finito. Um poliedro factível é limitado quando nenhuma direção o leva ao infinito.</p>
+        </div>
+      </div>
+
+      <div class="def">
+        <span class="callout-title">Definição — conjunto compacto</span>
+        <p style="margin:0">Em ℝⁿ, um conjunto é <strong>compacto</strong> se é <em>fechado</em> e <em>limitado</em>. É a combinação que o Teorema de Weierstrass exige.</p>
+      </div>
+
+      <h2>2 · O Teorema de Weierstrass</h2>
+      <p>Este é o resultado que responde à pergunta "a solução ótima existe?".</p>
+
+      <div class="def">
+        <span class="callout-title">Teorema de Weierstrass</span>
+        <p style="margin-bottom:.5em">Seja <em>f</em> uma função <strong>contínua</strong> definida num conjunto <strong>compacto</strong> (fechado e limitado) S ⊆ ℝⁿ. Então <em>f</em> atinge mínimo e máximo globais em S, isto é, existem <em>x̄</em>, <em>x̂</em> ∈ S tais que</p>
+        <div class="formula" style="margin:.6em 0 0">
+          f(x̄) ≤ f(x) ≤ f(x̂) &nbsp;&nbsp; para todo x ∈ S.
+        </div>
+      </div>
+
+      <p>Nas duas hipóteses (continuidade e compacidade) é onde tudo dá errado quando uma falta. Os dois laboratórios abaixo mostram exatamente isso.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Quando o ótimo não existe</span>
+          <span class="lab-hint">alterne os cenários</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap">
+              <canvas id="cvWeier" style="height:400px"></canvas>
+            </div>
+            <div>
+              <div class="chips" id="weierChips" style="flex-direction:column;align-items:stretch">
+                <button class="chip on" data-c="open">Domínio aberto</button>
+                <button class="chip" data-c="unbounded">Domínio ilimitado</button>
+                <button class="chip" data-c="discont">Função descontínua</button>
+                <button class="chip" data-c="ok">Tudo certo</button>
+              </div>
+              <div id="weierBox" class="note" style="margin-top:14px">
+                <span class="callout-title">Diagnóstico</span>
+                <span id="weierTxt"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warn">
+        <span class="callout-title">Ligação com Programação Linear</span>
+        Num PPL, <em>f</em> é linear (logo contínua). A região factível é fechada (interseção de semiplanos fechados) e, se o problema for viável e limitado, é compacta. Portanto <strong>existe solução ótima</strong> e ela é atingida em vértice. Se a região for ilimitada, a solução pode não existir (objetivo ilimitado) — e o Simplex detecta isso pela coluna sem coeficiente positivo.
+      </div>
+
+      <h2>3 · Separação de um convexo e um ponto</h2>
+      <p>A ideia, intuitiva: dado um conjunto convexo fechado S e um ponto <em>y</em> fora dele, sempre existe um "muro" (hiperplano) que deixa S de um lado e o ponto do outro. Esse muro é definido por um vetor <em>p</em> — a direção que separa.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Hiperplano separador</span>
+          <span class="lab-hint">arraste o ponto y</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap">
+              <canvas id="cvSep" style="height:400px"></canvas>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Posição de y</span><span class="val" id="yVal">7.0, 4.0</span></div>
+                <input type="range" id="yx" min="-7" max="7" step="0.1" value="7">
+                <input type="range" id="yy" min="-6" max="6" step="0.1" value="4" style="margin-top:8px">
+              </div>
+              <div class="formula" style="font-size:.96rem;padding:10px 13px;margin-bottom:12px">
+                Separador:<br>
+                <span class="hl" id="sepEq">—</span>
+              </div>
+              <div id="sepBox" class="note">
+                <span class="callout-title">Situação</span>
+                <span id="sepTxt">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lab-body" style="border-top:1px solid var(--line);padding-top:16px">
+          <p class="small muted" style="margin:0">O ponto <b>p</b> é a direção do ponto mais próximo de S até <em>y</em>. O hiperplano <code>pᵗx = pᵗx̄</code> é perpendicular a <b>p</b> e passa pelo ponto <em>x̄</em> de S mais próximo. Repare que o vetor de y até x̄ é justamente −p.</p>
+        </div>
+      </div>
+
+      <div class="def">
+        <span class="callout-title">Teorema da separação</span>
+        <p style="margin-bottom:.5em">Seja S não vazio, convexo e fechado em ℝⁿ, e <em>y</em> ∉ S. Então existem um vetor não nulo <em>p</em> e um escalar α tais que</p>
+        <div class="formula" style="margin:.6em 0 0">
+          pᵗy &gt; α &nbsp;&nbsp; e &nbsp;&nbsp; pᵗx ≤ α &nbsp; para todo x ∈ S.
+        </div>
+      </div>
+
+      <p>A prova sai do teorema do ponto mais próximo: existe <em>x̄</em> ∈ S que minimiza a distância a <em>y</em>, e para todo <em>x</em> ∈ S vale <code>(x − x̄)ᵗ(y − x̄) ≤ 0</code>. Tomando <code>p = y − x̄</code> e <code>α = pᵗx̄</code>, a desigualdade se reescreve como <code>pᵗx ≤ α</code>, enquanto <code>pᵗy − α = ‖y − x̄‖² &gt; 0</code>.</p>
+
+      <h2>4 · Hiperplano de suporte</h2>
+      <p>Quando o ponto <em>y</em> está <strong>sobre a fronteira</strong> de S, a separação degenera num <strong>hiperplano de suporte</strong>: o muro toca S num ponto (ou aresta) e deixa todo o conjunto de um lado.</p>
+
+      <div class="formula">
+        H = { x | pᵗx = α } &nbsp;&nbsp; com &nbsp; pᵗx ≤ α ∀x ∈ S, e igualdade atingida em algum x̄ ∈ ∂S
+      </div>
+
+      <p>No caso de um poliedro, cada face é exatamente um hiperplano de suporte. Essa observação é o que dá origem às condições de otimalidade: no ótimo, a curva de nível da função objetivo é um hiperplano que <strong>suporta</strong> a região factível.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Suporte: a curva de nível tangenciando o poliedro</span>
+          <span class="lab-hint">arraste o nível</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap">
+              <canvas id="cvSupport" style="height:400px"></canvas>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Nível da função objetivo</span><span class="val" id="lvlVal">—</span></div>
+                <input type="range" id="lvl" min="0" max="100" step="1" value="30">
+              </div>
+              <p class="small muted">O poliedro é o mesmo da região factível clássica. A reta é a curva de nível. O nível máximo em que a reta ainda toca a região é o <b>valor ótimo</b>, e ela tangencia justamente no vértice.</p>
+              <div id="supBox" class="tip" style="margin-top:4px">
+                <span class="callout-title">Leitura</span>
+                <span id="supTxt">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>5 · Farkas e Gordan</h2>
+      <p>Dois resultados de alternativa — "exatamente um destes dois sistemas tem solução" — usados na derivação das condições de otimalidade e nos teoremas de dualidade.</p>
+
+      <div class="def">
+        <span class="callout-title">Teorema de Farkas</span>
+        <p style="margin-bottom:.5em">Sejam A uma matriz m×n e c ∈ ℝⁿ. Exatamente um dos sistemas tem solução:</p>
+        <div class="formula" style="margin:.5em 0 0">
+          (1) Ax ≤ 0 &nbsp;e&nbsp; cᵗx &gt; 0<br>
+          (2) Aᵗy = c &nbsp;e&nbsp; y ≥ 0
+        </div>
+      </div>
+
+      <p>A prova usa separação. Se (2) tem solução, todo <code>x</code> com <code>Ax ≤ 0</code> e <code>y ≥ 0</code> dá <code>cᵗx = yᵗAx ≤ 0</code>, então (1) falha. Se (2) não tem solução, separa-se <code>c</code> do cone <code>S = {Aᵗy : y ≥ 0}</code> e constrói-se um <code>x</code> que resolve (1).</p>
+
+      <div class="def">
+        <span class="callout-title">Corolário de Gordan</span>
+        <p style="margin-bottom:0">Exatamente um dos sistemas tem solução: (1) <code>Ax &lt; 0</code>; (2) <code>Aᵗy = 0</code> com <code>y ≥ 0</code>, <code>y ≠ 0</code>. Obtém-se aplicando Farkas à matriz aumentada <code>[A | 1]</code>.</p>
+      </div>
+
+      <div class="note">
+        <span class="callout-title">O que memorizar</span>
+        Para a prova, o essencial desta unidade é: (a) saber definir compacto = fechado + limitado; (b) enunciar Weierstrass e saber <em>qual hipótese</em> falha em cada contraexemplo; (c) entender que a separação existe porque S é convexo e fechado. Farkas/Gordan são menos prováveis como conta, mas a estrutura "exatamente um dos dois" pode aparecer na teoria.
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+/* ---------------- topologia ---------------- */
+(function () {
+  const cv = document.getElementById('cvTopo');
+  const plot = new PL.Plot2D(cv, { xmin: -6, xmax: 6, ymin: -6, ymax: 6 });
+  // S: disco raio 3.6 unido a um apêndice triangular (não convexo)
+  const R = 3.6;
+  function inS(x, y) {
+    if (x * x + y * y <= R * R) return true;
+    // apêndice: triângulo à direita
+    if (x >= 2.4 && x <= 5.2 && Math.abs(y) <= (5.2 - x) * 0.85) return true;
+    return false;
+  }
+  function nearBoundary(x, y) {
+    const eps = 0.13;
+    return inS(x, y) && (!inS(x + eps, y) || !inS(x - eps, y) || !inS(x, y + eps) || !inS(x, y - eps));
+  }
+
+  function draw(hx, hy) {
+    plot.resize().clear().grid().axes();
+    const { ctx } = plot;
+    const step = 4;
+    ctx.beginPath();
+    for (let py = 0; py < plot.H; py += step) {
+      for (let px = 0; px < plot.W; px += step) {
+        if (inS(plot.p2x(px + step / 2), plot.p2y(py + step / 2))) ctx.rect(px, py, step, step);
+      }
+    }
+    ctx.fillStyle = 'rgba(15,118,110,.16)';
+    ctx.fill();
+
+    // fronteira
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2; a += 0.01) {
+      const px = plot.x2p(R * Math.cos(a)), py = plot.y2p(R * Math.sin(a));
+      a ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.strokeStyle = '#b45309'; ctx.lineWidth = 2.6; ctx.stroke();
+    // bico
+    ctx.beginPath();
+    const tri = [[2.45, 2.36], [5.2, 0], [2.45, -2.36]];
+    tri.forEach((p, k) => k ? ctx.lineTo(plot.x2p(p[0]), plot.y2p(p[1])) : ctx.moveTo(plot.x2p(p[0]), plot.y2p(p[1])));
+    ctx.strokeStyle = '#b45309'; ctx.lineWidth = 2.6; ctx.stroke();
+
+    if (hx !== undefined) {
+      const inside = inS(hx, hy);
+      const bnd = inside && nearBoundary(hx, hy);
+      const color = !inside ? '#8b98a5' : bnd ? '#b45309' : '#15803d';
+      plot.point(hx, hy, { color, r: 6, ring: '#fff' });
+      const t = document.getElementById('topoTxt');
+      t.innerHTML = !inside
+        ? `<b style="color:#5a6875">Exterior.</b> O ponto (${hx.toFixed(1)}, ${hy.toFixed(1)}) não pertence a S.`
+        : bnd
+          ? `<b style="color:#b45309">Fronteira (∂S).</b> O ponto (${hx.toFixed(1)}, ${hy.toFixed(1)}) está em S, mas qualquer bolinha em volta sai de S.`
+          : `<b style="color:#15803d">Interior (int S).</b> O ponto (${hx.toFixed(1)}, ${hy.toFixed(1)}) tem uma bolinha inteira dentro de S.`;
+    }
+  }
+  cv.addEventListener('mousemove', e => {
+    const r = cv.getBoundingClientRect();
+    draw(plot.p2x(e.clientX - r.left), plot.p2y(e.clientY - r.top));
+  });
+  cv.addEventListener('touchmove', e => {
+    const r = cv.getBoundingClientRect();
+    const t = e.touches[0];
+    draw(plot.p2x(t.clientX - r.left), plot.p2y(t.clientY - r.top));
+    e.preventDefault();
+  }, { passive: false });
+  cv.dataset.autofit = '1';
+  cv._rerender = () => draw();
+  draw();
+})();
+
+/* ---------------- Weierstrass ---------------- */
+(function () {
+  const cv = document.getElementById('cvWeier');
+  const plot = new PL.Plot2D(cv, { xmin: -0.4, xmax: 11, ymin: -1.2, ymax: 6.5, equal: false });
+  let c = 'open';
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    const { ctx } = plot;
+    let lo, hi, fn, note;
+    if (c === 'open') {
+      lo = 1; hi = 9;
+      fn = x => 3 + 2 * Math.cos(x * 0.9);
+      note = '<b>Domínio aberto (1, 9).</b> f é contínua mas o domínio não é fechado: o mínimo em x→1 é aproximado mas nunca atingido. Weierstrass não se aplica.';
+    } else if (c === 'unbounded') {
+      lo = 2; hi = 10.5;
+      fn = x => 0.8 + 3 / (x * 0.55);
+      note = '<b>Domínio ilimitado [2, ∞).</b> f(x)→0 quando x→∞, mas nunca vale 0. O ínfimo existe, o mínimo não. Não é compacto.';
+    } else if (c === 'discont') {
+      lo = 1; hi = 9;
+      fn = x => (x < 5 ? 4.4 : 2.2);
+      note = '<b>Função descontínua.</b> O domínio é compacto, mas f salta em x=5. O "mínimo" seria 2.2 no lado direito — que é atingido aqui, mas repare que o ínfimo 2.2 não é atingido se invertermos. A hipótese de continuidade falha.';
+    } else {
+      lo = 1; hi = 9;
+      fn = x => 2.4 + 1.6 * Math.sin(x * 0.7) * Math.exp(-x * 0.05);
+      note = '<b>Hipóteses satisfeitas.</b> Domínio fechado e limitado, f contínua: existe mínimo e máximo globais — marcados em verde.';
+    }
+
+    // domain shade
+    const xa = plot.x2p(lo), xb = plot.x2p(c === 'unbounded' ? 10.5 : hi);
+    ctx.fillStyle = 'rgba(15,118,110,.07)';
+    ctx.fillRect(xa, plot.y2p(6.5), xb - xa, plot.y2p(-1.2) - plot.y2p(6.5));
+
+    // curve
+    const N = 500;
+    ctx.beginPath();
+    let started = false;
+    for (let k = 0; k <= N; k++) {
+      const x = lo + (hi - lo) * (k / N);
+      const y = fn(x);
+      if (!isFinite(y)) { started = false; continue; }
+      const px = plot.x2p(x), py = plot.y2p(y);
+      if (c === 'discont' && x >= 5) {
+        if (!started) { ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2.6; ctx.stroke(); ctx.beginPath(); ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2.6; }
+      }
+      started ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      started = true;
+    }
+    ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2.6; ctx.stroke();
+
+    if (c === 'ok') {
+      // encontrar min/max amostral
+      let mn = { x: lo, y: fn(lo) }, mx = { x: lo, y: fn(lo) };
+      for (let k = 0; k <= 1000; k++) {
+        const x = lo + (hi - lo) * (k / 1000), y = fn(x);
+        if (y < mn.y) mn = { x, y };
+        if (y > mx.y) mx = { x, y };
+      }
+      plot.point(mn.x, mn.y, { color: '#15803d', r: 6, ring: '#fff', label: 'mín', labelDx: 8 });
+      plot.point(mx.x, mx.y, { color: '#15803d', r: 6, ring: '#fff', label: 'máx', labelDx: 8 });
+    } else if (c === 'discont') {
+      plot.point(5, 4.4, { color: '#b42318', r: 5, halo: false });
+      plot.point(5, 2.2, { color: '#b42318', r: 5, halo: false });
+    }
+    // labels eixos
+    plot.text(5.5, 6.1, 'f(x)', { align: 'center', size: 12, color: '#5a6875' });
+    document.getElementById('weierTxt').innerHTML = note;
+  }
+
+  document.querySelectorAll('#weierChips .chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      document.querySelectorAll('#weierChips .chip').forEach(x => x.classList.remove('on'));
+      ch.classList.add('on');
+      c = ch.dataset.c; draw();
+    });
+  });
+  cv.dataset.autofit = '1'; cv._rerender = draw;
+  draw();
+})();
+
+/* ---------------- separação ---------------- */
+(function () {
+  const cv = document.getElementById('cvSep');
+  const plot = new PL.Plot2D(cv, { xmin: -7, xmax: 7, ymin: -6, ymax: 6 });
+  // S = elipse centrada em 0
+  const A = 3.6, B = 2.6;
+  const inS = (x, y) => (x * x) / (A * A) + (y * y) / (B * B) <= 1;
+  const yPt = { x: 7, y: 4 };
+
+  function nearestToY(y) {
+    // projeta y na elipse (gradiente — aproximação iterativa)
+    let p = { x: PL.clamp(y.x, -A, A), y: PL.clamp(y.y, -B, B) };
+    if (inS(p.x, p.y) === false) p = { x: A, y: 0 };
+    for (let it = 0; it < 200; it++) {
+      const f = (p.x * p.x) / (A * A) + (p.y * p.y) / (B * B) - 1;
+      const gx = 2 * p.x / (A * A), gy = 2 * p.y / (B * B);
+      // move na direção do gradiente da distância até y com restrição
+      const dx = y.x - p.x, dy = y.y - p.y;
+      const g2 = gx * gx + gy * gy || 1e-9;
+      const t = (f / g2) * 0.5;
+      p.x += -gx * t * 0.5 + dx * 0.004;
+      p.y += -gy * t * 0.5 + dy * 0.004;
+      // renorm
+      const k = Math.sqrt((p.x * p.x) / (A * A) + (p.y * p.y) / (B * B));
+      if (k > 0) { p.x /= k; p.y /= k; }
+    }
+    return p;
+  }
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    const { ctx } = plot;
+    // elipse S
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2; a += 0.01) {
+      const px = plot.x2p(A * Math.cos(a)), py = plot.y2p(B * Math.sin(a));
+      a ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(15,118,110,.16)'; ctx.fill();
+    ctx.strokeStyle = '#0f766e'; ctx.lineWidth = 2.4; ctx.stroke();
+
+    const inY = inS(yPt.x, yPt.y);
+    let xb;
+    if (inY) {
+      xb = { x: yPt.x, y: yPt.y };
+      document.getElementById('sepEq').textContent = 'y ∈ S — não há separação';
+      document.getElementById('sepTxt').innerHTML = '<b>y está dentro de S.</b> O teorema exige y ∉ S. Mova o ponto para fora.';
+      document.getElementById('sepBox').className = 'warn';
+    } else {
+      xb = nearestToY(yPt);
+      const p = { x: yPt.x - xb.x, y: yPt.y - xb.y };
+      const alpha = p.x * xb.x + p.y * xb.y;
+      // reta p·x = alpha:  p.x*x + p.y*y = alpha
+      const nrm = Math.hypot(p.x, p.y) || 1;
+      document.getElementById('sepEq').textContent =
+        `${p.x.toFixed(2)}·x₁ + ${p.y.toFixed(2)}·x₂ = ${alpha.toFixed(2)}`;
+      document.getElementById('sepTxt').innerHTML =
+        `<b>y separado.</b> pᵗy = ${(p.x*yPt.x + p.y*yPt.y).toFixed(2)} &gt; α = ${alpha.toFixed(2)}, e todo x∈S satisfaz pᵗx ≤ α.`;
+      document.getElementById('sepBox').className = 'note';
+
+      // semiplano válido
+      plot.halfplane(p.x, p.y, alpha, { fill: 'rgba(29,78,216,.05)', stroke: false });
+      plot.line(p.x, p.y, alpha, { color: '#1d4ed8', width: 2, dash: [7, 5] });
+      // vetor p
+      plot.arrow(xb.x, xb.y, xb.x + p.x * 0.55, xb.y + p.y * 0.55, { color: '#b45309', width: 2 });
+      plot.text(xb.x + p.x * 0.55, xb.y + p.y * 0.55, 'p', { size: 13, weight: 700, color: '#b45309', dx: 6 });
+    }
+
+    plot.point(xb.x, xb.y, { color: '#0f766e', r: 5, ring: '#fff', label: 'x̄', labelDx: -12 });
+    plot.point(yPt.x, yPt.y, { color: '#b42318', r: 6, ring: '#fff', label: 'y', labelDx: 9, labelWeight: 700 });
+    document.getElementById('yVal').textContent = `${yPt.x.toFixed(1)}, ${yPt.y.toFixed(1)}`;
+  }
+
+  document.getElementById('yx').addEventListener('input', e => { yPt.x = +e.target.value; draw(); });
+  document.getElementById('yy').addEventListener('input', e => { yPt.y = +e.target.value; draw(); });
+
+  // arrastar no canvas
+  let drag = false;
+  cv.addEventListener('mousedown', () => drag = true);
+  window.addEventListener('mouseup', () => drag = false);
+  cv.addEventListener('mousemove', e => {
+    if (!drag) return;
+    const r = cv.getBoundingClientRect();
+    yPt.x = PL.clamp(PL.round(plot.p2x(e.clientX - r.left), 1), -7, 7);
+    yPt.y = PL.clamp(PL.round(plot.p2y(e.clientY - r.top), 1), -6, 6);
+    document.getElementById('yx').value = yPt.x;
+    document.getElementById('yy').value = yPt.y;
+    draw();
+  });
+
+  cv.dataset.autofit = '1'; cv._rerender = draw;
+  draw();
+})();
+
+/* ---------------- suporte ---------------- */
+(function () {
+  const cv = document.getElementById('cvSupport');
+  const plot = new PL.Plot2D(cv, { xmin: -0.5, xmax: 6, ymin: -0.5, ymax: 6 });
+  // região: x1<=3, x2<=4, x1+2x2<=9, >=0
+  const cons = [
+    { a: 1, b: 0, c: 3, op: '<=' },
+    { a: 0, b: 1, c: 4, op: '<=' },
+    { a: 1, b: 2, c: 9, op: '<=' },
+  ];
+  const obj = [5, 2];
+  const res = PL.solveLP2D(cons, obj, 'max');
+  const zmax = res.optimum.z;
+
+  function draw(pct) {
+    plot.resize().clear().grid().axes();
+    const z = (zmax * pct) / 100;
+    cons.forEach(k => {
+      plot.halfplane(k.a, k.b, k.c, { fill: 'rgba(15,118,110,.055)', stroke: false });
+      plot.line(k.a, k.b, k.c, { color: 'rgba(15,118,110,.55)', width: 1.6 });
+    });
+    if (res.hull.length) plot.polygon(res.hull, { fill: 'rgba(15,118,110,.16)', stroke: '#0f766e', width: 2.2 });
+
+    const touches = z <= zmax + 1e-6;
+    plot.line(obj[0], obj[1], z, { color: touches ? '#b45309' : '#8b98a5', width: 2.4 });
+    // gradiente
+    plot.arrow(0.4, 0.4, 0.4 + obj[0] * 0.16, 0.4 + obj[1] * 0.16, { color: '#6d28d9', width: 2 });
+    plot.text(0.4 + obj[0] * 0.16, 0.4 + obj[1] * 0.16, '∇f', { size: 12, weight: 700, color: '#6d28d9', dx: 6 });
+
+    if (z >= zmax - 1e-6) {
+      plot.point(res.optimum.x, res.optimum.y, { color: '#b42318', r: 6, ring: '#fff', label: 'ótimo', labelDx: 9 });
+    }
+    res.vertices.forEach(v => {
+      if (z >= zmax - 1e-6 && Math.abs(v.x - res.optimum.x) < 1e-6 && Math.abs(v.y - res.optimum.y) < 1e-6) return;
+      plot.point(v.x, v.y, { color: '#0f766e', r: 3.2, halo: false });
+    });
+
+    document.getElementById('lvlVal').textContent = `z = ${z.toFixed(2)}`;
+    document.getElementById('supTxt').innerHTML =
+      z > zmax + 1e-6
+        ? `A reta está <b>fora</b> da região: este nível é inatingível.`
+        : z >= zmax - 1e-6
+          ? `Nível máximo (z = ${zmax.toFixed(2)}). A reta <b>suporta</b> o poliedro no vértice (${res.optimum.x.toFixed(1)}, ${res.optimum.y.toFixed(1)}).`
+          : `A reta <b>corta</b> a região — este nível ainda é atingível, mas pode ser melhorado.`;
+  }
+
+  document.getElementById('lvl').addEventListener('input', e => draw(+e.target.value));
+  cv.dataset.autofit = '1'; cv._rerender = () => draw(+document.getElementById('lvl').value);
+  draw(30);
+})();
+</script>
+</body>
+</html>

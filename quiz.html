@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulado interativo — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="quiz">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Treino · múltipla escolha</div>
+        <h1>Simulado interativo</h1>
+        <p class="lead">24 questões cobrindo convexidade, gráfica, Simplex, duas fases e sistemas lineares. Responda, confira a explicação e acompanhe o placar.</p>
+      </div>
+
+      <div class="lab" style="margin-bottom:24px">
+        <div class="lab-body" style="padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="flex:1 1 220px">
+            <div class="progress-bar" style="width:100%;height:8px">
+              <div class="progress-fill" id="qProg" style="width:0%"></div>
+            </div>
+          </div>
+          <div style="font-size:14px;color:var(--ink-3)">
+            <b id="qScore" style="color:var(--accent);font-size:16px">0</b> acertos de <span id="qTotal">0</span> respondidas
+          </div>
+          <button class="btn btn-sm" id="qReset">Refazer</button>
+          <button class="btn btn-sm" id="qShuffle">Embaralhar</button>
+        </div>
+      </div>
+
+      <div class="quiz" id="quizBox"></div>
+
+      <div id="qFinal" class="hero" style="display:none;margin-top:30px;padding:30px">
+        <div class="eyebrow">Resultado</div>
+        <h1 id="qFinalTitle" style="font-size:1.9rem">—</h1>
+        <p id="qFinalMsg"></p>
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+const QUESTIONS = [
+  {
+    q: 'A região factível de um problema de programação linear é sempre:',
+    o: ['Um conjunto convexo', 'Um conjunto não-convexo em geral', 'Sempre ilimitada', 'Sempre um triângulo'],
+    a: 0,
+    e: 'É a interseção de semiplanos, e a interseção de conjuntos convexos é convexa. O formato depende das restrições, mas a convexidade é garantida.'
+  },
+  {
+    q: 'Em um PPL que tem solução ótima, essa solução é atingida:',
+    o: ['No ponto médio da região', 'Em pelo menos um vértice da região factível', 'Somente no interior', 'Em qualquer ponto da fronteira'],
+    a: 1,
+    e: 'Pela convexidade e linearidade de f, se existe ótimo, existe um ótimo em vértice. É a justificativa do Simplex.'
+  },
+  {
+    q: 'Um vértice da região factível corresponde a:',
+    o: ['Uma solução básica viável (SBV)', 'Uma solução inviável', 'Um ponto interior', 'A origem sempre'],
+    a: 0,
+    e: 'Vértice = solução básica viável. Essa equivalência é o elo entre a geometria e o tableau.'
+  },
+  {
+    q: 'A envoltória convexa conv(S) é:',
+    o: ['A união de todos os convexos de S', 'O maior convexo contido em S', 'O menor conjunto convexo que contém S', 'O fecho de S'],
+    a: 2,
+    e: 'conv(S) é o menor convexo que contém S — equivalentemente, a interseção de todos os convexos que contêm S.'
+  },
+  {
+    q: 'Um conjunto é compacto quando é:',
+    o: ['Aberto e ilimitado', 'Fechado e limitado', 'Convexo e aberto', 'Ilimitado e convexo'],
+    a: 1,
+    e: 'Compacto = fechado + limitado. É a hipótese do Teorema de Weierstrass sobre o conjunto.'
+  },
+  {
+    q: 'O Teorema de Weierstrass garante existência de mínimo e máximo globais quando:',
+    o: ['f é contínua em um conjunto compacto', 'f é linear em qualquer conjunto', 'f é descontínua em um compacto', 'f é contínua em um conjunto aberto'],
+    a: 0,
+    e: 'As duas hipóteses são: f contínua e domínio compacto. Faltando qualquer uma, o ótimo pode não existir.'
+  },
+  {
+    q: 'No método gráfico, se a curva de nível é paralela a uma aresta da região factível no nível ótimo, ocorre:',
+    o: ['Inviabilidade', 'Solução ilimitada', 'Múltiplos ótimos', 'Degeneração'],
+    a: 2,
+    e: 'Toda a aresta tem o mesmo valor de z — infinitas soluções ótimas.'
+  },
+  {
+    q: 'Uma região factível vazia significa que o problema é:',
+    o: ['Ilimitado', 'Inviável', 'Degenerado', 'Ótimo na origem'],
+    a: 1,
+    e: 'Sem ponto que satisfaça todas as restrições, não há solução: problema inviável.'
+  },
+  {
+    q: 'A conversão de uma restrição "≤" para a forma padrão do Simplex introduz:',
+    o: ['Variável artificial', 'Variável de folga', 'Variável de excesso', 'Nada'],
+    a: 1,
+    e: 'a·x ≤ b vira a·x + s = b, com s ≥ 0 (folga). A artificial só aparece em ≥ e =.'
+  },
+  {
+    q: 'Na linha z do tableau (forma de maximização), a variável que entra é a de:',
+    o: ['Maior coeficiente positivo', 'Coeficiente mais negativo', 'Menor razão b/a', 'Maior valor em b'],
+    a: 1,
+    e: 'O coeficiente mais negativo indica o maior ganho por unidade. Quando não há mais negativos, o ótimo foi atingido.'
+  },
+  {
+    q: 'O critério de saída do Simplex é:',
+    o: ['Maior razão b/a', 'Menor razão b/a entre linhas com a > 0', 'Menor coeficiente na linha z', 'Escolher a última linha'],
+    a: 1,
+    e: 'A menor razão bᵢ/aᵢₖ (com aᵢₖ > 0) é o primeiro recurso que se esgota — essa é a variável que sai.'
+  },
+  {
+    q: 'Se a coluna da variável que entra não tem nenhum coeficiente positivo nas restrições:',
+    o: ['O problema é inviável', 'Há múltiplos ótimos', 'O objetivo é ilimitado', 'Ocorre degeneração'],
+    a: 2,
+    e: 'Sem restrição limitando o crescimento dessa variável, z cresce sem limite: objetivo ilimitado.'
+  },
+  {
+    q: 'Empate na escolha da variável que sai (mesma razão mínima) indica:',
+    o: ['Inviabilidade', 'Possível degeneração', 'Ilimitado', 'Erro de cálculo'],
+    a: 1,
+    e: 'A escolha é arbitrária e pode gerar solução básica degenerada (alguma básica igual a zero).'
+  },
+  {
+    q: 'No ótimo, uma variável não-básica com coeficiente 0 na linha z indica:',
+    o: ['Inviável', 'Soluções múltiplas', 'Ilimitado', 'Nada especial'],
+    a: 1,
+    e: 'Ela pode entrar sem alterar z — existe uma família de soluções ótimas.'
+  },
+  {
+    q: 'As variáveis artificiais são necessárias quando há restrições do tipo:',
+    o: ['Apenas ≤', 'Apenas ≥ e =', 'Apenas x ≥ 0', 'Nenhuma restrição'],
+    a: 1,
+    e: 'Com ≥ não há coluna unitária +1 (o excesso tem −1) e com = não há variável alguma para a base.'
+  },
+  {
+    q: 'No método das duas fases, ao final da fase 1 as variáveis artificiais somam 0. Isso significa:',
+    o: ['Problema inviável', 'Encontrou-se uma SBV do problema real', 'Objetivo ilimitado', 'O ótimo já foi atingido'],
+    a: 1,
+    e: 'Zerar as artificiais remove a violação das restrições: a base atual é viável para o problema original. Falta a fase 2.'
+  },
+  {
+    q: 'Se ao final da fase 1 a soma das artificiais é positiva, o problema é:',
+    o: ['Viável', 'Ilimitado', 'Inviável', 'Degenerado'],
+    a: 2,
+    e: 'Não foi possível satisfazer as restrições originais: o problema não tem solução viável.'
+  },
+  {
+    q: 'Na minimização pelo Simplex, qual a adaptação usual?',
+    o: ['Trocar todos os sinais de b', 'Resolver max(−f) ou inverter o critério de entrada', 'Ignorar a linha z', 'Usar apenas duas fases'],
+    a: 1,
+    e: 'Minimizar f equivale a maximizar −f; ou, mantendo f, inverte-se o critério (entra o mais positivo).'
+  },
+  {
+    q: 'A substituição retroativa é usada em sistemas:',
+    o: ['Triangulares superiores', 'Triangulares inferiores', 'Não triangulares', 'Sempre'],
+    a: 0,
+    e: 'Em um triangular superior, resolve-se de baixo para cima: da última equação vem xₙ, depois xₙ₋₁, etc. (inferior usa substituição progressiva).'
+  },
+  {
+    q: 'A pivotação parcial na eliminação de Gauss serve para:',
+    o: ['Acelerar o cálculo', 'Evitar pivô zero e reduzir a propagação de erro', 'Tornar o sistema não-linear', 'Eliminar a substituição retroativa'],
+    a: 1,
+    e: 'Escolher o maior |coeficiente| para o pivô mantém os multiplicadores com módulo ≤ 1 e reduz a amplificação de erros.'
+  },
+  {
+    q: 'O critério das linhas (diagonal estritamente dominante) é uma condição:',
+    o: ['Necessária e suficiente para convergência', 'Suficiente, mas não necessária', 'Necessária, mas não suficiente', 'Sem relação com convergência'],
+    a: 1,
+    e: 'Se |aᵢᵢ| > Σ|aᵢⱼ|, a convergência é garantida; mas o método pode convergir sem satisfazer o critério.'
+  },
+  {
+    q: 'A diferença entre Jacobi e Gauss-Seidel é que Gauss-Seidel:',
+    o: ['Usa os valores antigos de todas as variáveis', 'Usa os valores já atualizados assim que disponíveis', 'Não é iterativo', 'Dispensa convergência'],
+    a: 1,
+    e: 'Gauss-Seidel usa xⱼ⁽ᵏ⁺¹⁾ já calculados para j < i, o que em geral acelera a convergência.'
+  },
+  {
+    q: 'Um sistema mal condicionado é aquele em que:',
+    o: ['A matriz é diagonal dominante', 'Pequenas perturbações causam grandes mudanças na solução', 'O determinante é grande', 'O resíduo é sempre zero'],
+    a: 1,
+    e: 'É o caso das retas quase paralelas: a interseção é extremamente sensível a perturbações nos coeficientes ou em b.'
+  },
+  {
+    q: 'Sobre métodos diretos × iterativos, é correto afirmar:',
+    o: ['Iterativos são sempre melhores', 'Diretos têm limitado o erro de arredondamento em sistemas grandes', 'Iterativos têm erro de truncamento e são autocorretivos', 'Não há diferença prática'],
+    a: 2,
+    e: 'Iterativos param por tolerância (erro de truncamento) e se autocorrigem; diretos não têm truncamento, mas sofrem arredondamento em grande porte.'
+  },
+];
+
+(function () {
+  const box = document.getElementById('quizBox');
+  let order = QUESTIONS.map((_, i) => i);
+  let answered = {};
+  let score = 0;
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function build() {
+    answered = {}; score = 0;
+    document.getElementById('qTotal').textContent = '0';
+    document.getElementById('qScore').textContent = '0';
+    document.getElementById('qProg').style.width = '0%';
+    document.getElementById('qFinal').style.display = 'none';
+
+    let h = '';
+    order.forEach((qi, k) => {
+      const Q = QUESTIONS[qi];
+      h += `<div class="q" data-q="${qi}">
+        <div class="q-stem"><span class="qnum">${k + 1}</span>${Q.q}</div>
+        <div class="opts">`;
+      Q.o.forEach((opt, j) => {
+        h += `<label class="opt" data-opt="${j}">
+          <input type="radio" name="q${qi}" value="${j}">
+          <span>${opt}</span>
+        </label>`;
+      });
+      h += `</div><div class="q-exp" id="exp${qi}"><b>Explicação.</b> ${Q.e}</div></div>`;
+    });
+    box.innerHTML = h;
+
+    box.querySelectorAll('.q').forEach(qEl => {
+      const qi = +qEl.dataset.q;
+      qEl.querySelectorAll('.opt input').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const val = +inp.value;
+          if (answered[qi] != null) return;
+          answered[qi] = val;
+          const Q = QUESTIONS[qi];
+          qEl.querySelectorAll('.opt').forEach(o => {
+            const j = +o.dataset.opt;
+            if (j === Q.a) o.classList.add('correct');
+            if (j === val && val !== Q.a) o.classList.add('wrong');
+          });
+          if (val === Q.a) score++;
+          document.getElementById('exp' + qi).classList.add('show');
+          update();
+        });
+      });
+    });
+  }
+
+  function update() {
+    const n = Object.keys(answered).length;
+    document.getElementById('qTotal').textContent = n;
+    document.getElementById('qScore').textContent = score;
+    document.getElementById('qProg').style.width = (QUESTIONS.length ? (n / QUESTIONS.length) * 100 : 0) + '%';
+
+    if (n === QUESTIONS.length) {
+      const pct = Math.round((score / QUESTIONS.length) * 100);
+      const fin = document.getElementById('qFinal');
+      fin.style.display = 'block';
+      document.getElementById('qFinalTitle').textContent = `${score} / ${QUESTIONS.length} — ${pct}%`;
+      let msg;
+      if (pct >= 90) msg = 'Excelente. Você está pronto. Revise apenas o formulário na véspera e descanse.';
+      else if (pct >= 75) msg = 'Muito bom. Revise os pontos que errou no módulo correspondente e refaça o simulado.';
+      else if (pct >= 50) msg = 'Base razoável, mas há lacunas. Prioridade: tableau do Simplex e casos especiais.';
+      else msg = 'Volte aos módulos 02–07 com calma. Foque em montar o tableau e nos critérios de entrada/saída.';
+      document.getElementById('qFinalMsg').textContent = msg;
+      fin.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  document.getElementById('qReset').addEventListener('click', build);
+  document.getElementById('qShuffle').addEventListener('click', () => { shuffle(order); build(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  build();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conjuntos convexos — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="convexos">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade V · Fundamentação teórica</div>
+        <h1>Conjuntos convexos</h1>
+        <p class="lead">Toda a teoria do Simplex se apoia em um único fato geométrico: a região factível de um problema linear é convexa, e o ótimo — quando existe — está num vértice. Entender convexidade é entender <em>por que</em> o algoritmo funciona.</p>
+      </div>
+
+      <h2>1 · O que é um conjunto convexo</h2>
+      <p>A definição é visualmente simples: um conjunto é convexo quando, para quaisquer dois pontos dele, o segmento de reta que os une fica inteiramente dentro do conjunto. Nenhum "buraco", nenhuma reentrância.</p>
+
+      <div class="def">
+        <span class="callout-title">Definição — conjunto convexo</span>
+        <p style="margin-bottom:.5em">Um conjunto <em>S</em> ⊆ ℝⁿ é <strong>convexo</strong> se, para todos <em>x</em>, <em>y</em> ∈ S e todo α ∈ [0, 1],</p>
+        <div class="formula" style="margin:.6em 0 0">
+          (1 − α)·x + α·y ∈ S
+        </div>
+      </div>
+
+      <p>O ponto <code>(1−α)x + αy</code> é chamado de <strong>combinação convexa</strong> de <em>x</em> e <em>y</em>. Quando α = 0 obtemos <em>x</em>; α = 1, <em>y</em>; α = ½, o ponto médio. Perceba que os pesos <code>(1−α)</code> e <code>α</code> são <strong>não negativos e somam 1</strong> — é exatamente isso que garante que o ponto fica no segmento, e não na reta toda.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Laboratório — combinação convexa</span>
+          <span class="lab-hint">arraste os pontos A e B; mova o α</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap">
+              <canvas id="cvComb" style="height:420px"></canvas>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>α (peso de B)</span><span class="val" id="alphaVal">0.50</span></div>
+                <input type="range" id="alpha" min="0" max="1" step="0.01" value="0.5">
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Ponto A (x, y)</span><span class="val" id="aVal">1, 1</span></div>
+                <input type="range" id="ax" min="-1" max="6" step="0.1" value="1">
+                <input type="range" id="ay" min="-1" max="6" step="0.1" value="1" style="margin-top:8px">
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Ponto B (x, y)</span><span class="val" id="bVal">5, 4</span></div>
+                <input type="range" id="bx" min="-1" max="6" step="0.1" value="5">
+                <input type="range" id="by" min="-1" max="6" step="0.1" value="4" style="margin-top:8px">
+              </div>
+              <div class="formula" style="font-size:.98rem;padding:11px 14px;margin:0">
+                P = (1−α)A + αB<br>
+                <span class="hl" id="pOut">(3.00, 2.50)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>O ponto roxo é a combinação convexa. Ele nunca sai do segmento entre A e B — experimente arrastar os controles e observar. É essa "garantia de permanência no segmento" que a convexidade exige que valha para <em>todos</em> os pares do conjunto.</p>
+
+      <h2>2 · O que não é convexo</h2>
+      <p>Um conjunto deixa de ser convexo se existir <strong>pelo menos um par</strong> de pontos cujo segmento saia do conjunto. Basta um contraexemplo. O caso clássico: uma "lua" ou um anel — dois pontos nas pontas opostas, o segmento passa pelo buraco.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Teste de convexidade</span>
+          <span class="lab-hint">arraste A e B para achar o contraexemplo</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap">
+              <canvas id="cvTest" style="height:380px"></canvas>
+            </div>
+            <div>
+              <div class="chips" id="shapeChips">
+                <button class="chip on" data-shape="disco">Disco</button>
+                <button class="chip" data-shape="anel">Anel</button>
+                <button class="chip" data-shape="l">Forma em L</button>
+                <button class="chip" data-shape="tri">Triângulo</button>
+                <button class="chip" data-shape="nuvem">Nuvem de pontos</button>
+              </div>
+              <p class="small muted" style="margin-top:14px">Pontos A e B são arrastáveis diretamente no gráfico.</p>
+              <div id="verdict" class="note" style="margin-top:10px">
+                <span class="callout-title">Veredito</span>
+                <span id="verdictTxt">Mova os pontos para testar o segmento.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="callout-title">Regra de bolso para a prova</span>
+        Interseção de conjuntos convexos é sempre convexa. Como a região factível de um PPL é a interseção de <em>semiplanos</em>, e cada semiplano é convexo, a região factível é automaticamente convexa. Esse é o argumento que você deve escrever.
+      </div>
+
+      <h2>3 · Combinação convexa generalizada e envoltória convexa</h2>
+      <p>A definição se estende para mais de dois pontos: dados <em>x₁, …, xₖ</em>, uma combinação convexa é</p>
+      <div class="formula">
+        λ₁x₁ + λ₂x₂ + … + λₖxₖ &nbsp;&nbsp; com &nbsp; λᵢ ≥ 0 &nbsp; e &nbsp; <span class="hl">Σ λᵢ = 1</span>
+      </div>
+      <p>O conjunto de <em>todas</em> as combinações convexas de um conjunto S é a sua <strong>envoltória convexa</strong>, denotada <code>conv(S)</code> ou <code>H(S)</code>.</p>
+
+      <div class="def">
+        <span class="callout-title">Definição — envoltória convexa</span>
+        <p style="margin-bottom:0">A envoltória convexa de S é o <strong>menor conjunto convexo</strong> que contém S. Equivalentemente, é a interseção de todos os conjuntos convexos que contêm S.</p>
+      </div>
+
+      <p>No plano, a envoltória convexa de um conjunto finito de pontos é o polígono convexo formado pelo "elástico esticado" em volta deles. Os pontos que ficam nos cantos desse polígono são exatamente os <strong>pontos extremos</strong> — e são esses que importam para o Simplex.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Envoltória convexa de uma nuvem de pontos</span>
+          <span class="lab-hint">clique para adicionar pontos</span>
+        </div>
+        <div class="lab-body">
+          <div class="canvas-wrap">
+            <canvas id="cvHull" style="height:400px"></canvas>
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-sm" id="hullReset">Regerar nuvem</button>
+            <button class="btn btn-sm" id="hullClear">Limpar</button>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#8b98a5"></i>ponto interno (combinável, não é vértice)</span>
+            <span><i class="dot" style="background:#b42318"></i>ponto extremo (vértice)</span>
+            <span><i style="background:#0f766e"></i>envoltória convexa</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>4 · Pontos extremos e a ponte para o Simplex</h2>
+      <p>Um ponto de um conjunto convexo é <strong>extremo</strong> (ou vértice) quando <em>não pode ser escrito como combinação convexa de dois outros pontos distintos do conjunto</em>. Ou seja: ele não é "meio do caminho" entre ninguém — é um canto.</p>
+
+      <div class="formula">
+        x é extremo &nbsp;⇔&nbsp; x = λa + (1−λ)b, λ ∈ (0,1) &nbsp;⇒&nbsp; a = b = x
+      </div>
+
+      <p>Esses três fatos, que ficaram estabelecidos na fundamentação teórica, são o coração do método:</p>
+
+      <div class="grid grid-3">
+        <div class="card">
+          <span class="card-tag">1</span>
+          <h4>A região é convexa</h4>
+          <p class="small" style="margin:0">A interseção dos semiplanos das restrições forma um conjunto convexo — o <em>poliedro</em> factível.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag">2</span>
+          <h4>Ótimo em vértice</h4>
+          <p class="small" style="margin:0">Se o PPL tem solução ótima, ela é atingida em pelo menos um vértice da região factível.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag">3</span>
+          <h4>Vértice = solução básica viável</h4>
+          <p class="small" style="margin:0">Todo vértice corresponde a uma solução básica viável (SBV). Há no máximo <code>C(n,m)</code> delas.</p>
+        </div>
+      </div>
+
+      <p>É por isso que o Simplex não precisa testar infinitos pontos: ele só caminha entre vértices. A justificativa de que existe um ótimo em vértice vem da convexidade — e é isso que você precisa saber argumentar.</p>
+
+      <details class="answer-reveal">
+        <summary>Por que o ótimo é vértice? (argumento para escrever na prova)</summary>
+        <p>Seja <em>x*</em> um ponto ótimo qualquer. Se <em>x*</em> não é vértice, ele é combinação convexa de dois pontos <em>a</em>, <em>b</em> da região: <code>x* = λa + (1−λ)b</code>. Como a função objetivo é linear,</p>
+        <div class="formula" style="font-size:1rem">
+          f(x*) = λ f(a) + (1−λ) f(b)
+        </div>
+        <p>Logo <code>f(x*)</code> é média ponderada de <code>f(a)</code> e <code>f(b)</code> — não pode ser estritamente maior que ambos. Portanto um dos dois não é pior que <em>x*</em>. Repetindo o argumento e usando que a região tem finitos vértices, conclui-se que existe um vértice tão bom quanto <em>x*</em> — ou seja, um ótimo em vértice.</p>
+      </details>
+
+      <h2>5 · Convexidade de funções (para contexto)</h2>
+      <p>Vale não confundir <em>conjunto</em> convexo com <em>função</em> convexa. Uma função é convexa quando o segmento entre dois pontos do gráfico fica <em>acima</em> do gráfico:</p>
+      <div class="formula">
+        f((1−λ)a + λb) ≤ (1−λ)f(a) + λf(b)
+      </div>
+      <p>Em otimização, a convexidade permite concluir que <strong>minimizadores locais são globais</strong> — motivo pelo qual ela é tão importante. Mas atenção: no caso linear (que é o da prova), a função objetivo é ao mesmo tempo convexa e côncava, e o resultado forte é o do ótimo em vértice.</p>
+
+      <div class="warn">
+        <span class="callout-title">Pegadinha comum</span>
+        "União" de convexos <strong>não</strong> é, em geral, convexa. Só a <em>interseção</em> preserva convexidade. Se a questão perguntar sobre a região factível, a palavra é interseção.
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+/* ---------------- 1. combinação convexa ---------------- */
+(function () {
+  const cv = document.getElementById('cvComb');
+  const plot = new PL.Plot2D(cv, { xmin: -1, xmax: 6, ymin: -1, ymax: 6 });
+  const A = { x: 1, y: 1 }, B = { x: 5, y: 4 };
+  let alpha = 0.5;
+
+  const els = {
+    alpha: document.getElementById('alpha'),
+    ax: document.getElementById('ax'), ay: document.getElementById('ay'),
+    bx: document.getElementById('bx'), by: document.getElementById('by'),
+  };
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    // segmento
+    plot.segment(A.x, A.y, B.x, B.y, { color: '#c9c6bb', width: 3 });
+    // pontos
+    plot.point(A.x, A.y, { color: '#1d4ed8', r: 5, label: 'A', labelDx: -10, labelWeight: 700 });
+    plot.point(B.x, B.y, { color: '#15803d', r: 5, label: 'B', labelDx: 10, labelWeight: 700 });
+    const P = { x: (1 - alpha) * A.x + alpha * B.x, y: (1 - alpha) * A.y + alpha * B.y };
+    plot.point(P.x, P.y, { color: '#6d28d9', r: 7, ring: '#fff', label: 'P', labelDx: 12, labelWeight: 700 });
+    // "composição" por eixos
+    plot.segment(A.x, A.y, P.x, A.y, { color: '#d8d5cb', width: 1, dash: [4, 4] });
+    plot.segment(P.x, A.y, P.x, P.y, { color: '#d8d5cb', width: 1, dash: [4, 4] });
+
+    document.getElementById('pOut').textContent = `(${P.x.toFixed(2)}, ${P.y.toFixed(2)})`;
+    document.getElementById('aVal').textContent = `${A.x.toFixed(1)}, ${A.y.toFixed(1)}`;
+    document.getElementById('bVal').textContent = `${B.x.toFixed(1)}, ${B.y.toFixed(1)}`;
+    document.getElementById('alphaVal').textContent = alpha.toFixed(2);
+  }
+
+  els.alpha.addEventListener('input', e => { alpha = +e.target.value; draw(); });
+  ['ax', 'ay'].forEach(k => els[k].addEventListener('input', e => {
+    A[k[1]] = +e.target.value; draw();
+  }));
+  ['bx', 'by'].forEach(k => els[k].addEventListener('input', e => {
+    B[k[1]] = +e.target.value; draw();
+  }));
+
+  cv.dataset.autofit = '1';
+  cv._rerender = draw;
+  draw();
+})();
+
+/* ---------------- 2. teste de convexidade ---------------- */
+(function () {
+  const cv = document.getElementById('cvTest');
+  const plot = new PL.Plot2D(cv, { xmin: -6, xmax: 6, ymin: -6, ymax: 6 });
+  const A = { x: -4, y: 3 }, B = { x: 4, y: -3 };
+  let shape = 'disco';
+  let drag = null;
+
+  function inShape(p) {
+    const x = p.x, y = p.y, r = Math.hypot(x, y);
+    switch (shape) {
+      case 'disco': return r <= 4.4;
+      case 'anel': return r <= 4.4 && r >= 2.1;
+      case 'l': return (x >= -4 && x <= 1 && y >= -4 && y <= 1) || (x >= 1 && x <= 4 && y >= -4 && y <= 1);
+      case 'tri': return (y >= -3) && (y <= 4 - 1.2 * x) && (y <= 4 + 1.2 * x);
+      case 'nuvem': return r <= 4.4 && !(Math.abs(x) < 0.9 && y > -4 && y < 0.4);
+    }
+    return false;
+  }
+
+  function shapePath(ctx, W, H) {
+    // sample points for fill
+    const step = 4;
+    ctx.beginPath();
+    for (let py = 0; py < H; py += step) {
+      for (let px = 0; px < W; px += step) {
+        const p = { x: plot.p2x(px + step / 2), y: plot.p2y(py + step / 2) };
+        if (inShape(p)) ctx.rect(px, py, step, step);
+      }
+    }
+  }
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    const { ctx } = plot;
+    ctx.save();
+    ctx.fillStyle = 'rgba(15,118,110,.13)';
+    shapePath(ctx, plot.W, plot.H);
+    ctx.fill();
+    ctx.restore();
+
+    // amostragem do segmento
+    let allInside = true;
+    const N = 60;
+    for (let k = 0; k <= N; k++) {
+      const t = k / N;
+      const p = { x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t };
+      const inside = inShape(p);
+      if (!inside) allInside = false;
+      plot.point(p.x, p.y, {
+        color: inside ? 'rgba(21,128,61,.85)' : 'rgba(180,35,24,.9)',
+        r: 2.2, halo: false,
+      });
+    }
+    plot.segment(A.x, A.y, B.x, B.y, { color: allInside ? '#15803d' : '#b42318', width: 2, dash: [5, 4] });
+    plot.point(A.x, A.y, { color: '#1d4ed8', r: 6, ring: '#fff', label: 'A', labelDx: -12, labelWeight: 700 });
+    plot.point(B.x, B.y, { color: '#15803d', r: 6, ring: '#fff', label: 'B', labelDx: 10, labelWeight: 700 });
+
+    const v = document.getElementById('verdict');
+    const t = document.getElementById('verdictTxt');
+    if (allInside) {
+      v.className = 'tip';
+      t.innerHTML = 'Para <b>estes</b> pontos, o segmento ficou dentro. Para provar que o conjunto é convexo, isso precisa valer para <em>todos</em> os pares.';
+    } else {
+      v.className = 'danger';
+      t.innerHTML = '<b>Contraexemplo!</b> O segmento AB saiu do conjunto — logo o conjunto <b>não é convexo</b>. Um único par basta.';
+    }
+  }
+
+  function pos(e) {
+    const rect = cv.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { px: t.clientX - rect.left, py: t.clientY - rect.top };
+  }
+  function near(p, q) { return Math.hypot(p.x - q.x, p.y - q.y) < 0.55; }
+
+  function down(e) {
+    const m = pos(e);
+    const g = { x: plot.p2x(m.px), y: plot.p2y(m.py) };
+    if (near(g, A)) drag = A; else if (near(g, B)) drag = B; else return;
+    e.preventDefault();
+  }
+  function move(e) {
+    if (!drag) return;
+    const m = pos(e);
+    drag.x = PL.clamp(PL.round(plot.p2x(m.px), 1), -5.6, 5.6);
+    drag.y = PL.clamp(PL.round(plot.p2y(m.py), 1), -5.6, 5.6);
+    draw();
+    e.preventDefault();
+  }
+  function up() { drag = null; }
+
+  cv.addEventListener('mousedown', down);
+  window.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', up);
+  cv.addEventListener('touchstart', down, { passive: false });
+  cv.addEventListener('touchmove', move, { passive: false });
+  cv.addEventListener('touchend', up);
+
+  document.querySelectorAll('#shapeChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#shapeChips .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      shape = c.dataset.shape;
+      draw();
+    });
+  });
+
+  cv.dataset.autofit = '1';
+  cv._rerender = draw;
+  draw();
+})();
+
+/* ---------------- 3. envoltória convexa ---------------- */
+(function () {
+  const cv = document.getElementById('cvHull');
+  const plot = new PL.Plot2D(cv, { xmin: -6, xmax: 6, ymin: -6, ymax: 6 });
+  let pts = [];
+
+  function gen() {
+    const r = PL.rand(Math.floor(Math.random() * 1e6));
+    pts = [];
+    for (let i = 0; i < 16; i++) {
+      pts.push([PL.round((r() - 0.5) * 10, 1), PL.round((r() - 0.5) * 10, 1)]);
+    }
+  }
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    if (pts.length) {
+      const hull = PL.convexHull(pts);
+      plot.polygon(hull, { fill: 'rgba(15,118,110,.14)', stroke: '#0f766e', width: 2 });
+      const isHull = (p) => hull.some(h => Math.abs(h[0] - p[0]) < 1e-6 && Math.abs(h[1] - p[1]) < 1e-6);
+      pts.forEach(p => {
+        const ex = isHull(p);
+        plot.point(p[0], p[1], { color: ex ? '#b42318' : '#8b98a5', r: ex ? 5 : 3.5, halo: !ex });
+      });
+    }
+  }
+
+  cv.addEventListener('click', e => {
+    const rect = cv.getBoundingClientRect();
+    const x = PL.round(plot.p2x(e.clientX - rect.left), 1);
+    const y = PL.round(plot.p2y(e.clientY - rect.top), 1);
+    if (x > -6 && x < 6 && y > -6 && y < 6) { pts.push([x, y]); draw(); }
+  });
+
+  document.getElementById('hullReset').addEventListener('click', () => { gen(); draw(); });
+  document.getElementById('hullClear').addEventListener('click', () => { pts = []; draw(); });
+
+  cv.dataset.autofit = '1';
+  cv._rerender = draw;
+  gen(); draw();
+})();
+</script>
+</body>
+</html>

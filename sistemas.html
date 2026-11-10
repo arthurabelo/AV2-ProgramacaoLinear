@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistemas lineares — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="sistemas">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade Extra 02 · Cálculo numérico</div>
+        <h1>Sistemas lineares</h1>
+        <p class="lead">O Simplex resolve um sistema em cada pivô. Entender os métodos numéricos de resolução de <code>Ax = b</code> — diretos e iterativos — fecha o ciclo da disciplina. Veja os passos de cada método executando num tableau real.</p>
+      </div>
+
+      <h2>1 · O problema e a classificação</h2>
+      <p>Resolver <code>Ax = b</code>: encontrar o vetor <em>x</em> que satisfaça simultaneamente as n equações.</p>
+      <div class="formula">
+        A·x = b &nbsp;·&nbsp; A ∈ ℝⁿˣⁿ (coeficientes) · x ∈ ℝⁿ (incógnitas) · b ∈ ℝⁿ (termos independentes)
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card">
+          <span class="card-tag" style="color:var(--good)">Compatível</span>
+          <h4>Possível / consistente</h4>
+          <p class="small" style="margin:0">Tem ao menos uma solução.<br>
+          <b>Determinado:</b> solução única (det A ≠ 0).<br>
+          <b>Indeterminado:</b> infinitas.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag" style="color:var(--bad)">Incompatível</span>
+          <h4>Impossível</h4>
+          <p class="small" style="margin:0">Nenhuma solução. Ocorre, por exemplo, quando uma linha é múltipla de outra mas o termo independente não acompanha.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag">Homogêneo</span>
+          <h4>b = 0</h4>
+          <p class="small" style="margin:0">Sempre compatível: admite a <b>solução trivial</b> x = 0. Será determinado se det A ≠ 0.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="callout-title">Resíduo</span>
+        Para medir o erro de uma solução aproximada, usa-se <code>r = b − A·x̄</code>. Resíduo pequeno é <em>indício</em> de boa solução, mas não é prova — em sistemas mal condicionados um resíduo minúsculo pode esconder um erro enorme na solução.
+      </div>
+
+      <h2>2 · Substituição retroativa</h2>
+      <p>Se A é triangular superior, resolve-se de baixo para cima: da última equação vem <code>xₙ</code>; substituindo na penúltima vem <code>xₙ₋₁</code>, e assim por diante.</p>
+      <div class="formula">
+        xₙ = bₙ / aₙₙ &nbsp;&nbsp;;&nbsp;&nbsp; xᵢ = ( bᵢ − Σ<sub>j&gt;i</sub> aᵢⱼ·xⱼ ) / aᵢᵢ
+      </div>
+
+      <h2>3 · Métodos diretos</h2>
+      <p>Chegam à solução (a menos de arredondamento) num número finito de operações.</p>
+
+      <h3>Eliminação de Gauss</h3>
+      <p>Transforma A numa triangular superior por operações elementares, depois substitui retroativamente.</p>
+      <ol class="step-list">
+        <li><b>Pivô.</b> No passo k, o pivô é <code>aₖₖ⁽ᵏ⁾</code>. Se for zero, troca-se a linha com outra abaixo cujo coeficiente na coluna k não seja zero (nunca com linha acima — isso desfaria as eliminações já feitas).</li>
+        <li><b>Multiplicadores.</b> Para cada linha i &gt; k: <code>mᵢₖ = aᵢₖ / aₖₖ</code>. A linha i vira <code>Lᵢ ← Lᵢ − mᵢₖ·Lₖ</code>.</li>
+        <li><b>Repetir</b> até a forma triangular.</li>
+        <li><b>Substituir</b> retroativamente.</li>
+      </ol>
+
+      <div class="warn">
+        <span class="callout-title">Pivotação</span>
+        Para minimizar a propagação de erro, escolhe-se como pivô o elemento de <b>maior valor absoluto</b> na coluna (pivotação parcial) ou em toda a submatriz (pivotação completa). Assim todos os multiplicadores ficam com módulo ≤ 1, evitando amplificar erros.
+      </div>
+
+      <h3>Gauss-Jordan</h3>
+      <p>Vai além de Gauss: em cada passo elimina <em>também acima</em> do pivô, deixando a matriz na forma da identidade. O vetor <code>b</code> se transforma diretamente na solução.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Simulador — Gauss e Gauss-Jordan</span>
+          <span class="lab-hint">passo a passo com pivotação</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid" style="grid-template-columns:1fr 250px">
+            <div>
+              <div class="tbl-wrap" style="margin:0"><div id="gTable"></div></div>
+              <div id="gMsg" class="note" style="margin-top:12px"><span class="callout-title">Passo</span><span id="gMsgTxt">—</span></div>
+              <div id="gSol" class="tip" style="margin-top:10px"><span class="callout-title">Solução</span><span id="gSolTxt">—</span></div>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Método</span></div>
+                <div class="chips">
+                  <button class="chip on" id="gGauss">Gauss</button>
+                  <button class="chip" id="gJordan">Gauss-Jordan</button>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn primary" id="gNext">Passo →</button>
+                <button class="btn" id="gPrev">←</button>
+              </div>
+              <div class="btn-row" style="margin-top:7px">
+                <button class="btn btn-sm" id="gReset">Reiniciar</button>
+                <button class="btn btn-sm" id="gNew">Outro sistema</button>
+              </div>
+              <div class="ctrl" style="margin-top:14px">
+                <label class="toggle"><input type="checkbox" id="gPivot" checked> pivotação parcial</label>
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Sistema</span></div>
+                <div id="gSys" class="mono small" style="line-height:1.9;color:var(--ink-3)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>4 · Métodos iterativos</h2>
+      <p>Em vez de triangular, reescreve-se o sistema como <code>x = Bx + g</code> e itera-se <code>x⁽ᵏ⁺¹⁾ = B·x⁽ᵏ⁾ + g</code> a partir de um chute inicial. Vantajoso em sistemas grandes e esparsos, e autocorretivo (erros não se acumulam).</p>
+      <div class="formula">
+        Processo iterativo: &nbsp; x⁽ᵏ⁺¹⁾ = B·x⁽ᵏ⁾ + g &nbsp;·&nbsp; converge se <span class="hl">ρ(B) &lt; 1</span>
+      </div>
+      <p>onde <code>ρ(B) = max|λᵢ|</code> é o raio espectral. Como calcular autovalores é caro, usa-se uma condição suficiente:</p>
+
+      <div class="def">
+        <span class="callout-title">Critério das linhas (condição suficiente)</span>
+        <p style="margin:0">A sequência converge se a matriz for estritamente <b>diagonal dominante</b>:</p>
+        <div class="formula" style="margin:.6em 0 0">
+          |aᵢᵢ| &gt; Σ<sub>j≠i</sub> |aᵢⱼ| &nbsp;&nbsp; para todo i
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Jacobi</h4>
+          <p class="small">Usa os valores <b>antigos</b> de todas as variáveis para calcular as novas:</p>
+          <div class="formula" style="font-size:.96rem;padding:10px 13px;margin:.5em 0 0">
+            xᵢ⁽ᵏ⁺¹⁾ = ( bᵢ − Σ<sub>j≠i</sub> aᵢⱼ·xⱼ⁽ᵏ⁾ ) / aᵢᵢ
+          </div>
+        </div>
+        <div class="card">
+          <h4>Gauss-Seidel</h4>
+          <p class="small">Usa os valores <b>já atualizados</b> assim que ficam disponíveis — em geral converge mais rápido:</p>
+          <div class="formula" style="font-size:.96rem;padding:10px 13px;margin:.5em 0 0">
+            xᵢ⁽ᵏ⁺¹⁾ = ( bᵢ − Σ<sub>j&lt;i</sub> aᵢⱼ·xⱼ⁽ᵏ⁺¹⁾ − Σ<sub>j&gt;i</sub> aᵢⱼ·xⱼ⁽ᵏ⁾ ) / aᵢᵢ
+          </div>
+        </div>
+      </div>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Simulador — Jacobi e Gauss-Seidel</span>
+          <span class="lab-hint">acompanhe a convergência</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid" style="grid-template-columns:1fr 270px">
+            <div>
+              <div class="canvas-wrap"><canvas id="itCanvas" style="height:300px"></canvas></div>
+              <div class="tbl-wrap" style="margin-top:12px"><div id="itTable"></div></div>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Método</span></div>
+                <div class="chips">
+                  <button class="chip on" id="itJac">Jacobi</button>
+                  <button class="chip" id="itGS">Gauss-Seidel</button>
+                </div>
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Valor inicial x⁽⁰⁾</span><span class="val" id="itX0">0</span></div>
+                <input type="range" id="itX0r" min="-3" max="3" step="0.5" value="0">
+              </div>
+              <div class="btn-row">
+                <button class="btn primary" id="itStep">Iterar →</button>
+                <button class="btn" id="itRun">Rodar 10</button>
+                <button class="btn" id="itReset">Reiniciar</button>
+              </div>
+              <div id="itCrit" class="note" style="margin-top:14px">
+                <span class="callout-title">Critério das linhas</span>
+                <span id="itCritTxt">—</span>
+              </div>
+              <div class="ctrl" style="margin-top:14px">
+                <div class="ctrl-label"><span>Sistema</span></div>
+                <div id="itSys" class="mono small" style="line-height:1.9;color:var(--ink-3)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>5 · Mal condicionamento</h2>
+      <p>Um sistema é <b>mal condicionado</b> quando pequenas perturbações nos coeficientes ou em <code>b</code> causam grandes mudanças na solução. Geometricamente, as retas são quase paralelas — o ponto de interseção é extremamente sensível.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Quase paralelas = interseção instável</span>
+          <span class="lab-hint">perturbe b e veja a solução saltar</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap"><canvas id="mcCanvas" style="height:340px"></canvas></div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Perturbação em b₂</span><span class="val" id="mcEps">0.00</span></div>
+                <input type="range" id="mcSlider" min="-0.05" max="0.05" step="0.001" value="0">
+              </div>
+              <div id="mcTxt" class="warn">
+                <span class="callout-title">Solução</span>
+                <span id="mcSol">—</span>
+              </div>
+              <p class="small muted">O sistema é <code>x₁ + x₂ = 2</code> · <code>x₁ + 1.01x₂ = 2.01</code>. Uma variação de 0,05 no lado direito desloca a solução enormemente — típico de A quase singular.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="callout-title">Direto × Iterativo — o que dizer na prova</span>
+        <b>Diretos</b> (Gauss, Jordan): número finito de operações, sem erro de truncamento, mas sofrem com arredondamento em sistemas grandes. <b>Iterativos</b> (Jacobi, Gauss-Seidel): erro de truncamento controlado pela tolerância, autocorretivos, exigem convergência garantida. Não há um sempre melhor — depende da esparsidade e do porte do sistema.
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+const nf = v => {
+  if (Math.abs(v) < 1e-10) return '0';
+  const r = Math.round(v * 1000) / 1000;
+  return Number.isInteger(r) ? String(r) : r.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+};
+
+/* ================= Gauss / Gauss-Jordan ================= */
+(function () {
+  const SYSTEMS = [
+    { A: [[4, -1, 0], [-1, 4, -1], [0, -1, 3]], b: [2, 4, 3] },
+    { A: [[2, 1, -1], [-3, -1, 2], [-2, 1, 2]], b: [8, -11, -3] },
+    { A: [[1, 2, 3], [2, 5, 3], [1, 0, 8]], b: [14, 18, 9] },
+    { A: [[3, 2, 4], [1, 1, 2], [4, 3, 2]], b: [1, 2, 3] },
+  ];
+  let sysIdx = 0, S = null, steps = [], cur = 0, method = 'gauss', pivot = true;
+
+  function build() {
+    const base = SYSTEMS[sysIdx];
+    const n = base.A.length;
+    // matriz aumentada
+    let M = base.A.map((row, i) => row.concat([base.b[i]]));
+    steps = [];
+    let stepNo = 0;
+
+    const snap = (msg, dec) => {
+      steps.push({ M: M.map(r => r.slice()), msg, dec: dec || null, step: stepNo });
+    };
+
+    if (method === 'gauss') {
+      snap('Sistema original, matriz aumentada [A | b].');
+      for (let k = 0; k < n - 1; k++) {
+        // pivotamento
+        if (pivot) {
+          let p = k;
+          for (let i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[p][k])) p = i;
+          if (p !== k) {
+            [M[k], M[p]] = [M[p], M[k]];
+            stepNo++;
+            snap(`Pivotação: troca L${k + 1} ↔ L${p + 1} para trazer o maior |coeficiente| (${nf(M[k][k])}) para o pivô.`);
+          }
+        }
+        const piv = M[k][k];
+        if (Math.abs(piv) < 1e-12) { snap(`Pivô nulo em L${k + 1} — sistema singular ou precisa de troca de coluna.`); break; }
+        for (let i = k + 1; i < n; i++) {
+          const m = M[i][k] / piv;
+          if (Math.abs(m) < 1e-12) continue;
+          for (let j = k; j <= n; j++) M[i][j] -= m * M[k][j];
+          M[i][k] = 0;
+          stepNo++;
+          snap(`Elimina x${'₁₂₃₄₅'[k]} de L${i + 1}: m${i + 1}${k + 1} = ${nf(m)}; L${i + 1} ← L${i + 1} − (${nf(m)})·L${k + 1}.`, { row: i, col: k, from: k });
+        }
+      }
+      snap('Forma triangular superior atingida. Agora é substituição retroativa.', null);
+      // back sub
+      const x = new Array(n).fill(0);
+      for (let i = n - 1; i >= 0; i--) {
+        let s = M[i][n];
+        for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+        x[i] = s / M[i][i];
+      }
+      snap('Solução: ' + x.map((v, i) => `x${'₁₂₃₄₅'[i]} = ${nf(v)}`).join(' · '), null);
+    } else {
+      // Gauss-Jordan
+      snap('Sistema original, matriz aumentada [A | b].');
+      for (let k = 0; k < n; k++) {
+        if (pivot) {
+          let p = k;
+          for (let i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[p][k])) p = i;
+          if (p !== k) {
+            [M[k], M[p]] = [M[p], M[k]];
+            stepNo++;
+            snap(`Pivotação: troca L${k + 1} ↔ L${p + 1}.`);
+          }
+        }
+        const piv = M[k][k];
+        if (Math.abs(piv) < 1e-12) { snap(`Pivô nulo na coluna ${k + 1}.`); break; }
+        for (let j = k; j <= n; j++) M[k][j] /= piv;
+        stepNo++;
+        snap(`Normaliza L${k + 1} dividindo pelo pivô ${nf(piv)} → pivô vira 1.`, { row: k, col: k });
+        for (let i = 0; i < n; i++) {
+          if (i === k) continue;
+          const f = M[i][k];
+          if (Math.abs(f) < 1e-12) continue;
+          for (let j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+          M[i][k] = 0;
+          stepNo++;
+          snap(`Zera x${'₁₂₃₄₅'[k]} em L${i + 1}: L${i + 1} ← L${i + 1} − (${nf(f)})·L${k + 1}.`, { row: i, col: k, from: k });
+        }
+      }
+      const x = M.map(row => row[n]);
+      snap('Matriz identidade atingida: b virou a solução. ' + x.map((v, i) => `x${'₁₂₃₄₅'[i]} = ${nf(v)}`).join(' · '));
+    }
+    cur = 0;
+    render();
+  }
+
+  function render() {
+    const st = steps[cur];
+    const n = st.M.length;
+    let h = '<table class="tab-simplex"><thead><tr><th class="basic">&nbsp;</th>';
+    for (let j = 0; j < n; j++) h += `<th>x${'₁₂₃₄₅'[j]}</th>`;
+    h += '<th style="border-left:2px solid #cfccc1">b</th></tr></thead><tbody>';
+    st.M.forEach((row, i) => {
+      h += `<tr><td class="basic">L${i + 1}</td>`;
+      row.forEach((v, j) => {
+        const cls = (st.dec && st.dec.row === i && st.dec.col === j) ? 'piv' : '';
+        const border = j === n ? 'border-left:2px solid #cfccc1' : '';
+        h += `<td class="${cls}" style="${border}">${nf(v)}</td>`;
+      });
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    document.getElementById('gTable').innerHTML = h;
+    document.getElementById('gMsgTxt').innerHTML = st.msg;
+
+    // solução se o último passo
+    const isLast = cur === steps.length - 1;
+    document.getElementById('gSolTxt').innerHTML = isLast
+      ? st.msg.replace(/^[^:]*: /, '')
+      : '<span class="muted">avance até o fim</span>';
+
+    // sistema original
+    const base = SYSTEMS[sysIdx];
+    let sh = '';
+    base.A.forEach((row, i) => {
+      sh += row.map((v, j) => `${v > 0 && j > 0 ? '+' : ''}${v}x${'₁₂₃₄₅'[j]}`).join(' ') + ` = ${base.b[i]}<br>`;
+    });
+    document.getElementById('gSys').innerHTML = sh;
+
+    document.getElementById('gNext').disabled = isLast;
+    document.getElementById('gPrev').disabled = cur <= 0;
+  }
+
+  document.getElementById('gNext').addEventListener('click', () => { if (cur < steps.length - 1) { cur++; render(); } });
+  document.getElementById('gPrev').addEventListener('click', () => { if (cur > 0) { cur--; render(); } });
+  document.getElementById('gReset').addEventListener('click', build);
+  document.getElementById('gNew').addEventListener('click', () => { sysIdx = (sysIdx + 1) % SYSTEMS.length; build(); });
+  document.getElementById('gGauss').addEventListener('click', () => {
+    method = 'gauss';
+    document.getElementById('gGauss').classList.add('on');
+    document.getElementById('gJordan').classList.remove('on');
+    build();
+  });
+  document.getElementById('gJordan').addEventListener('click', () => {
+    method = 'jordan';
+    document.getElementById('gJordan').classList.add('on');
+    document.getElementById('gGauss').classList.remove('on');
+    build();
+  });
+  document.getElementById('gPivot').addEventListener('change', e => { pivot = e.target.checked; build(); });
+
+  build();
+})();
+
+/* ================= Jacobi / Gauss-Seidel ================= */
+(function () {
+  // sistema com diagonal dominante
+  const A = [[4, 1, 1], [1, 5, 2], [1, 2, 6]];
+  const b = [8, 15, 20];
+  const n = 3;
+  let method = 'jacobi';
+  let history = [], cur = 0, x0 = 0;
+
+  function iterOnce(x) {
+    const y = new Array(n).fill(0);
+    if (method === 'jacobi') {
+      for (let i = 0; i < n; i++) {
+        let s = b[i];
+        for (let j = 0; j < n; j++) if (j !== i) s -= A[i][j] * x[j];
+        y[i] = s / A[i][i];
+      }
+    } else {
+      y[0] = x[0]; y[1] = x[1]; y[2] = x[2];
+      for (let i = 0; i < n; i++) {
+        let s = b[i];
+        for (let j = 0; j < n; j++) if (j !== i) s -= A[i][j] * y[j];
+        y[i] = s / A[i][i];
+      }
+    }
+    return y;
+  }
+
+  function reset() {
+    history = [{ x: [x0, x0, x0], e: null }];
+    cur = 0;
+    render();
+  }
+
+  function step() {
+    const last = history[history.length - 1];
+    const y = iterOnce(last.x);
+    let e = 0;
+    for (let i = 0; i < n; i++) e = Math.max(e, Math.abs(y[i] - last.x[i]));
+    history.push({ x: y, e });
+    cur = history.length - 1;
+    render();
+  }
+
+  const plot = new PL.Plot2D(document.getElementById('itCanvas'), { xmin: 0, xmax: 14, ymin: 0, ymax: 1.6, equal: false });
+
+  function render() {
+    // tabela
+    let h = '<table class="tab-simplex"><thead><tr><th class="basic">k</th><th>x₁</th><th>x₂</th><th>x₃</th><th>erro máx.</th></tr></thead><tbody>';
+    history.forEach((it, k) => {
+      h += `<tr class="${k === cur ? 'row-out' : ''}"><td class="basic">${k}</td>`;
+      it.x.forEach(v => h += `<td>${nf(v)}</td>`);
+      h += `<td>${it.e == null ? '—' : '   ' + it.e.toExponential(2)}</td></tr>`;
+    });
+    h += '</tbody></table>';
+    document.getElementById('itTable').innerHTML = h;
+
+    // gráfico de convergência (erro em escala log)
+    plot.resize().clear().grid().axes();
+    const pts = history.map((it, k) => ({ k, e: it.e == null ? 1 : Math.max(it.e, 1e-6) }));
+    if (pts.length > 1) {
+      plot.o.xmax = Math.max(14, pts.length + 1);
+      plot.resize().clear().grid().axes();
+      for (let i = 1; i < pts.length; i++) {
+        plot.segment(pts[i - 1].k, Math.log10(pts[i - 1].e), pts[i].k, Math.log10(pts[i].e), { color: '#0f766e', width: 2 });
+      }
+      pts.slice(1).forEach(p => plot.point(p.k, Math.log10(p.e), { color: '#0f766e', r: 3, halo: false }));
+    }
+    const { ctx } = plot;
+    ctx.save();
+    ctx.fillStyle = '#5a6875';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillText('log₁₀(erro) × iteração', plot.x2p(0.3), plot.y2p(1.45));
+    ctx.restore();
+
+    // critério
+    let lines = '';
+    let ok = true;
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let j = 0; j < n; j++) if (j !== i) s += Math.abs(A[i][j]);
+      const dom = Math.abs(A[i][i]) > s;
+      if (!dom) ok = false;
+      lines += `L${i + 1}: |${A[i][i]}| = ${Math.abs(A[i][i])} ${dom ? '>' : '≤'} ${s.toFixed(0)}<br>`;
+    }
+    document.getElementById('itCritTxt').innerHTML = lines +
+      (ok ? '<b style="color:var(--good)">Diagonal estritamente dominante → convergência garantida.</b>'
+          : '<b style="color:var(--bad)">Não é dominante — não há garantia.</b>');
+    document.getElementById('itCrit').className = ok ? 'tip' : 'warn';
+
+    document.getElementById('itX0').textContent = x0;
+
+    let sh = '';
+    A.forEach((row, i) => {
+      sh += row.map((v, j) => `${v > 0 && j > 0 ? '+' : ''}${v}x${'₁₂₃₄₅'[j]}`).join(' ') + ` = ${b[i]}<br>`;
+    });
+    document.getElementById('itSys').innerHTML = sh;
+  }
+
+  document.getElementById('itJac').addEventListener('click', () => {
+    method = 'jacobi';
+    document.getElementById('itJac').classList.add('on');
+    document.getElementById('itGS').classList.remove('on');
+    reset();
+  });
+  document.getElementById('itGS').addEventListener('click', () => {
+    method = 'gs';
+    document.getElementById('itGS').classList.add('on');
+    document.getElementById('itJac').classList.remove('on');
+    reset();
+  });
+  document.getElementById('itStep').addEventListener('click', step);
+  document.getElementById('itRun').addEventListener('click', () => { for (let i = 0; i < 10; i++) step(); });
+  document.getElementById('itReset').addEventListener('click', reset);
+  document.getElementById('itX0r').addEventListener('input', e => { x0 = +e.target.value; reset(); });
+
+  document.getElementById('itCanvas').dataset.autofit = '1';
+  document.getElementById('itCanvas')._rerender = render;
+
+  reset();
+})();
+
+/* ================= mal condicionamento ================= */
+(function () {
+  const plot = new PL.Plot2D(document.getElementById('mcCanvas'), { xmin: -0.5, xmax: 3.5, ymin: -0.5, ymax: 4.5, equal: false });
+  let eps = 0;
+
+  function draw() {
+    plot.resize().clear().grid().axes();
+    // x1 + x2 = 2  -> x2 = 2 - x1
+    plot.line(1, 1, 2, { color: '#0f766e', width: 2.2 });
+    // x1 + 1.01 x2 = 2.01 + eps
+    plot.line(1, 1.01, 2.01 + eps, { color: '#b45309', width: 2.2 });
+
+    // interseção
+    const det = 1 * 1.01 - 1 * 1;
+    const c2 = 2.01 + eps;
+    const x1 = (2 * 1.01 - 1 * c2) / det;
+    const x2 = (1 * c2 - 1 * 2) / det;
+    if (x1 > -50 && x1 < 50 && x2 > -50 && x2 < 50) {
+      plot.point(x1, x2, { color: '#b42318', r: 6, ring: '#fff', label: `(${x1.toFixed(2)}, ${x2.toFixed(2)})`, labelDx: 10 });
+    }
+    document.getElementById('mcSol').innerHTML =
+      `ε = ${eps.toFixed(3)} → x₁ = <b>${x1.toFixed(3)}</b>, x₂ = <b>${x2.toFixed(3)}</b>`;
+    document.getElementById('mcEps').textContent = eps.toFixed(3);
+  }
+  document.getElementById('mcSlider').addEventListener('input', e => { eps = +e.target.value; draw(); });
+  document.getElementById('mcCanvas').dataset.autofit = '1';
+  document.getElementById('mcCanvas')._rerender = draw;
+  draw();
+})();
+</script>
+</body>
+</html>

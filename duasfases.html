@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M Grande e duas fases — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="duasfases">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade VIII · Simplex · base inicial</div>
+        <h1>M Grande e duas fases</h1>
+        <p class="lead">O protótipo do Simplex depende de uma base inicial óbvia — o que só acontece quando todas as restrições são <code>≤</code> com <code>b ≥ 0</code>. Quando aparecem <code>≥</code> ou <code>=</code>, a folga não dá base. É aí que entram as variáveis artificiais.</p>
+      </div>
+
+      <h2>1 · Por que a base "de graça" falha</h2>
+      <p>Com restrições <code>≤</code>, cada folga tem coluna unitária e coeficiente +1 — ela pode ser básica com valor <code>bᵢ</code>. Mas:</p>
+      <ul>
+        <li><code>≥</code> usa <b>excesso</b> com coeficiente −1: a coluna é <code>−1</code>, então a variável não pode ser básica com valor positivo;</li>
+        <li><code>=</code> não tem variável nenhuma para ocupar a base.</li>
+      </ul>
+
+      <div class="formula">
+        3x₁ + 2x₂ ≥ 6 &nbsp;→&nbsp; 3x₁ + 2x₂ − e₁ = 6 &nbsp;&nbsp;(e₁ ≥ 0 é excesso)<br>
+        3x₁ + 2x₂ = 6 &nbsp;→&nbsp; sem folga, sem excesso
+      </div>
+
+      <p>A solução: em cada restrição problemática, adiciona-se uma <strong>variável artificial</strong> <code>aᵢ ≥ 0</code> com coeficiente +1. Ela forma a base inicial — mas atenção: atribuir valores positivos a ela <em>viola a restrição original</em>. Por isso criamos um novo problema <em>P'</em>, cujas soluções viáveis com <code>aᵢ = 0</code> correspondem às soluções viáveis do problema P.</p>
+
+      <div class="def">
+        <span class="callout-title">Regra de introdução</span>
+        <p style="margin:0">
+          <code>≤</code> → só folga (+1).<br>
+          <code>≥</code> → excesso (−1) <em>e</em> artificial (+1).<br>
+          <code>=</code> → só artificial (+1).<br>
+          Toda artificial ganha <b>+1</b> em valor absoluto na função objetivo artificial a ser minimizada.
+        </p>
+      </div>
+
+      <h2>2 · Método do M Grande</h2>
+      <p>Uma única rodada de Simplex, mas com um "castigo" enorme para as artificiais: penaliza-se cada artificial com um coeficiente <code>M</code> muito grande (simbólico). Na prática, o algoritmo é forçado a zerá-las para maximizar z.</p>
+
+      <div class="formula">
+        max &nbsp; z = Σ cⱼxⱼ <span class="hl">− M·Σ aᵢ</span> &nbsp;&nbsp;&nbsp;(M ≫ qualquer coeficiente real)
+      </div>
+      <p>Ao final: se alguma artificial permanece positiva na base, o problema é <b>inviável</b>. Se todas saíram da base (ou estão em zero), elimina-se as colunas artificiais e a solução é a do problema real.</p>
+
+      <div class="warn">
+        <span class="callout-title">Cuidado com M</span>
+        Como M é simbólico, você precisa decidir quem entra comparando coeficientes da forma <code>α + βM</code>. A regra prática: primeiro compare o coeficiente de M (mais negativo ganha); em caso de empate, compare a parte constante. Muitos professores pedem apenas a intuição, não a aritmética simbólica — mas saiba a regra.
+      </div>
+
+      <h2>3 · Método das duas fases</h2>
+      <p>Evita o M simbólico dividindo o trabalho em duas rodadas de Simplex comuns.</p>
+
+      <ol class="step-list">
+        <li>
+          <b>Fase 1 — achar uma SBV do problema real.</b>
+          Monte o problema <em>P'</em> com as artificiais e use a função objetivo artificial <code>min fₐ = Σ aᵢ</code> (equivalentemente, <code>max −Σ aᵢ</code>). Rode o Simplex.
+        </li>
+        <li>
+          <b>Checar viabilidade.</b>
+          Se ao final da fase 1 o mínimo de <code>fₐ</code> é <b>zero</b>, todas as artificiais saíram da base (ou estão em zero) → o problema é viável e você tem uma SBV de P. Se <code>fₐ &gt; 0</code>, uma artificial ficou positiva → <b>problema inviável</b>, pare.
+        </li>
+        <li>
+          <b>Remover as artificiais.</b>
+          Elimine as colunas artificiais do tableau. Se alguma permanece como básica com valor 0, remova pela linha correspondente (pode pivô numa coluna real).
+        </li>
+        <li>
+          <b>Fase 2 — otimizar.</b>
+          Com a base viável já montada, coloque a função objetivo real <code>z</code> e rode o Simplex normal até o ótimo.
+        </li>
+      </ol>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Simulador de duas fases</span>
+          <span class="lab-hint">fase 1 → fase 2, passo a passo</span>
+        </div>
+        <div class="lab-body">
+          <div class="chips" id="tpChips" style="margin-bottom:16px">
+            <button class="chip on" data-p="aula">Exemplo da aula</button>
+            <button class="chip" data-p="petroleo">Petróleo (min)</button>
+            <button class="chip" data-p="inviavel">Inviável</button>
+          </div>
+
+          <div id="tpProblem" class="formula" style="font-size:1rem"></div>
+
+          <div id="tpPhase1">
+            <h4 style="margin-top:20px">Fase 1 — minimizar as artificiais</h4>
+            <div class="tbl-wrap" style="margin:0"><div id="tpT1"></div></div>
+            <div class="btn-row" style="margin-top:10px">
+              <button class="btn primary btn-sm" id="tpNext1">Iterar →</button>
+              <button class="btn btn-sm" id="tpRun1">Rodar tudo</button>
+              <button class="btn btn-sm" id="tpReset1">Reiniciar</button>
+            </div>
+            <div id="tpMsg1" class="note" style="margin-top:10px"><span class="callout-title">Fase 1</span><span id="tpMsg1Txt">—</span></div>
+          </div>
+
+          <div id="tpPhase2" style="display:none;margin-top:26px">
+            <h4>Fase 2 — otimizar a função real</h4>
+            <div class="tbl-wrap" style="margin:0"><div id="tpT2"></div></div>
+            <div class="btn-row" style="margin-top:10px">
+              <button class="btn primary btn-sm" id="tpNext2">Iterar →</button>
+              <button class="btn btn-sm" id="tpRun2">Rodar tudo</button>
+            </div>
+            <div id="tpMsg2" class="tip" style="margin-top:10px"><span class="callout-title">Fase 2</span><span id="tpMsg2Txt">—</span></div>
+          </div>
+
+          <div id="tpVerdict" class="tip" style="margin-top:16px;display:none">
+            <span class="callout-title">Veredito final</span>
+            <span id="tpVerdictTxt"></span>
+          </div>
+        </div>
+      </div>
+
+      <h2>4 · O exemplo da aula, resolvido</h2>
+      <p>O problema clássico do material, já na forma com excessos e artificiais:</p>
+      <div class="formula">
+        min f(x₁,x₂) = 8x₁ + 12x₂<br>
+        s.a<br>
+        x₁ + 2x₂ − x₃ + a₁ = 5<br>
+        x₁ + x₂ − x₄ + a₂ = 3<br>
+        x₁, x₂, x₃, x₄, a₁, a₂ ≥ 0
+      </div>
+      <p>Aqui já é o problema P' — cada restrição tinha um <code>≥</code>, por isso excesso e artificial. A base inicial artificial é <code>a₁ = 5, a₂ = 3</code>, com todas as demais em zero. Como os valores positivos de a₁ e a₂ desobedecem as restrições originais, essa SBV <em>não</em> é viável para P — é viável apenas para P'.</p>
+
+      <details class="answer-reveal">
+        <summary>Ver a resolução completa das duas fases (passo a passo)</summary>
+        <p><b>Fase 1.</b> Função artificial: <code>min a₁ + a₂</code>. Substituindo as artificiais pela sua expressão em função das variáveis reais (a₁ = 5 − x₁ − 2x₂ + x₃, a₂ = 3 − x₁ − x₂ + x₄):</p>
+        <div class="formula" style="font-size:1rem">
+          a₁ + a₂ = 8 − 2x₁ − 3x₂ + x₃ + x₄
+        </div>
+        <p>Lineares; o Simplex reduz a₁+a₂ até zero. Ao final da fase 1, as artificiais deixam a base e obtém-se uma SBV real.</p>
+        <p><b>Fase 2.</b> Eliminam-se as colunas a₁ e a₂ e monta-se a linha z do problema real <code>min 8x₁ + 12x₂</code>. Roda-se o Simplex até o critério de parada (na minimização, para quando todos os coeficientes reduzidos forem ≥ 0 na forma apropriada).</p>
+        <p class="small muted">Use o simulador acima com o preset "Petróleo" para ver cada tableau.</p>
+      </details>
+
+      <h2>5 · Como diferenciar os métodos na prova</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>&nbsp;</th><th>M Grande</th><th>Duas fases</th></tr></thead>
+          <tbody>
+            <tr><td>Rodadas de Simplex</td><td>uma só</td><td>duas (fase 1 e fase 2)</td></tr>
+            <tr><td>Aritmética</td><td>com M simbólico</td><td>números comuns</td></tr>
+            <tr><td>Detecção de inviável</td><td>artificial fica positiva no fim</td><td>min fₐ &gt; 0 ao fim da fase 1</td></tr>
+            <tr><td>Vantagem</td><td>mais direto</td><td>evita M e erros numéricos</td></tr>
+            <tr><td>Usado em software</td><td>raramente</td><td>padrão nos solvers</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tip">
+        <span class="callout-title">Resumo que salva na prova</span>
+        <b>1.</b> Transforme para forma padrão. <b>2.</b> Marque onde precisa artificial (≥ e =). <b>3.</b> Mini­mize a soma das artificiais. <b>4.</b> Se zeraram → viável, limpe e otimize de verdade. <b>5.</b> Se não zeraram → inviável, acabou.
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+/* ==========================================================================
+   Solver genérico do Simplex (min/max, restrições ≤, ≥, =)
+   Usa duas fases. Gera tableaux passo a passo.
+   ========================================================================== */
+function nf(v) {
+  if (Math.abs(v) < 1e-9) return '0';
+  const r = Math.round(v * 1000) / 1000;
+  return Number.isInteger(r) ? String(r) : r.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function solveTwoPhase(obj, sense, cons) {
+  const n = obj.length, m = cons.length;
+  const rows = cons.map(k => {
+    let a = k.a.slice(), op = k.op, b = k.b;
+    if (b < 0) { a = a.map(x => -x); b = -b; op = op === '<=' ? '>=' : op === '>=' ? '<=' : '='; }
+    return { a, op, b };
+  });
+  let slackIdx = [], excessIdx = [], artIdx = [];
+  const colsInfo = [];
+  for (let j = 0; j < n; j++) colsInfo.push({ name: 'x' + '₁₂₃₄₅₆'[j], type: 'real' });
+  const rowExtra = rows.map(r => {
+    const e = { slack: null, exc: null, art: null };
+    if (r.op === '<=') { e.slack = colsInfo.length; colsInfo.push({ name: 's' + '₁₂₃₄₅₆'[slackIdx.length], type: 'slack' }); slackIdx.push(e.slack); }
+    if (r.op === '>=') { e.exc = colsInfo.length; colsInfo.push({ name: 'e' + '₁₂₃₄₅₆'[excessIdx.length], type: 'excess' }); excessIdx.push(e.exc);
+                          e.art = colsInfo.length; colsInfo.push({ name: 'a' + '₁₂₃₄₅₆'[artIdx.length], type: 'artificial' }); artIdx.push(e.art); }
+    if (r.op === '=') { e.art = colsInfo.length; colsInfo.push({ name: 'a' + '₁₂₃₄₅₆'[artIdx.length], type: 'artificial' }); artIdx.push(e.art); }
+    return e;
+  });
+  const NC = colsInfo.length;
+  let T = [];
+  for (let i = 0; i < m; i++) {
+    const row = new Array(NC).fill(0);
+    for (let j = 0; j < n; j++) row[j] = rows[i].a[j];
+    const e = rowExtra[i];
+    if (e.slack != null) row[e.slack] = 1;
+    if (e.exc != null) row[e.exc] = -1;
+    if (e.art != null) row[e.art] = 1;
+    row.push(rows[i].b);
+    T.push(row);
+  }
+  let basic = rowExtra.map(e => e.art != null ? e.art : e.slack);
+  const BCOL = NC;
+
+  function zRow(cvec) {
+    const zr = new Array(NC + 1).fill(0);
+    for (let j = 0; j < NC; j++) zr[j] = -cvec[j];
+    for (let i = 0; i < m; i++) {
+      const cb = cvec[basic[i]];
+      if (Math.abs(cb) < 1e-12) continue;
+      for (let j = 0; j <= NC; j++) zr[j] += cb * T[i][j];
+    }
+    return zr;
+  }
+  function runPhase(cvec, label, T0, B0) {
+    const frames = [];
+    let A = T0.map(r => r.slice());
+    let B = B0.slice();
+    T = A; basic = B;
+    let iter = 0, status = 'running', msg = '';
+    frames.push({ T: A.map(r=>r.slice()), basic: B.slice(), zr: zRow(cvec), status, msg: label+': tabela inicial.', dec: null });
+    while (iter < 40) {
+      const zr = zRow(cvec);
+      let enter = -1, best = -1e-9;
+      for (let j = 0; j < NC; j++) { if (colsInfo[j].type === 'excess') continue; if (zr[j] < best) { best = zr[j]; enter = j; } }
+      if (enter === -1) { status = 'optimal'; msg = 'Sem reduzidos negativos: ótimo.'; break; }
+      let leave = -1, br = Infinity, tie = false;
+      for (let i = 0; i < m; i++) if (A[i][enter] > 1e-9) { const r = A[i][BCOL]/A[i][enter]; if (r < br-1e-12){br=r;leave=i;tie=false;} else if (Math.abs(r-br)<1e-12) tie = true; }
+      if (leave === -1) { status = 'unbounded'; msg = 'Ilimitado.'; break; }
+      const dec = { enter, leave, ratio: br, tie };
+      const pv = A[leave][enter];
+      for (let j = 0; j <= NC; j++) A[leave][j] /= pv;
+      for (let i = 0; i < m; i++) { if (i===leave) continue; const f=A[i][enter]; if (Math.abs(f)<1e-12) continue; for (let j=0;j<=NC;j++) A[i][j]-=f*A[leave][j]; }
+      B[leave] = enter; iter++;
+      msg = `${colsInfo[enter].name} entra, linha ${leave+1} sai (razão ${nf(br)}).`;
+      frames.push({ T: A.map(r=>r.slice()), basic: B.slice(), zr: zRow(cvec), status, msg, dec });
+    }
+    frames.forEach(f => {
+      f.colNames = colsInfo.map(c => c.name);
+      f.basicNames = f.basic.map(b => colsInfo[b] ? colsInfo[b].name : '?');
+    });
+
+    const last = frames[frames.length-1]; last.status = status; last.msg = msg;
+    return frames;
+  }
+
+  const cArt = new Array(NC).fill(0); artIdx.forEach(a => cArt[a] = 1);
+  const cvec1 = cArt.map(c => -c);
+  const frames1 = runPhase(cvec1, 'Fase 1', T.map(r=>r.slice()), basic.slice());
+  const fl = frames1[frames1.length-1];
+  let sumArt = 0;
+  artIdx.forEach(a => { const i = fl.basic.indexOf(a); if (i>=0) sumArt += fl.T[i][BCOL]; });
+  if (sumArt > 1e-6) return { colsInfo, frames1, frames2: null, feasible:false, sumArt, sense, obj };
+
+  // fase 2: remove colunas artificiais
+  let T2 = fl.T.map(r=>r.slice()); let B2 = fl.basic.slice();
+  const keep = [];
+  for (let j=0;j<=NC;j++) if (!artIdx.includes(j) || j===BCOL) keep.push(j);
+  const mapOld = {}; keep.forEach((old,ne)=>mapOld[old]=ne);
+  T2 = T2.map(row=>keep.map(old=>row[old]));
+  B2 = B2.map(b=>mapOld[b]!==undefined?mapOld[b]:b);
+  const cols2 = keep.filter(j=>j!==BCOL).map(j=>colsInfo[j]);
+  const NC2 = cols2.length;
+
+  // reescrever runPhase2 usando NC2
+  const cFull = new Array(NC2).fill(0);
+  for (let j=0;j<NC2;j++){ const nm=cols2[j].name; if(nm[0]==='x'){ const idx='₁₂₃₄₅₆'.indexOf(nm[1]); if(idx>=0&&idx<n) cFull[j] = (sense==='max'?obj[idx]:-obj[idx]); } }
+
+  function zR2(A,B){ const zr=new Array(NC2+1).fill(0); for(let j=0;j<NC2;j++) zr[j]=-cFull[j];
+    for(let i=0;i<m;i++){ const cb=cFull[B[i]]??0; if(Math.abs(cb)<1e-12)continue; for(let j=0;j<=NC2;j++) zr[j]+=cb*A[i][j]; } return zr; }
+
+  let A=T2.map(r=>r.slice()), B=B2.slice();
+  const frames2=[]; let iter=0, status='running', msg='';
+  frames2.push({T:A.map(r=>r.slice()),basic:B.slice(),zr:zR2(A,B),status,msg:'Fase 2: tabela inicial.',dec:null});
+  while(iter<40){
+    const zr=zR2(A,B); let enter=-1,best=-1e-9;
+    for(let j=0;j<NC2;j++){ if(cols2[j].type==='excess')continue; if(zr[j]<best){best=zr[j];enter=j;} }
+    if(enter===-1){status='optimal';msg='Sem reduzidos negativos: ótimo.';break;}
+    let leave=-1,br=Infinity,tie=false;
+    for(let i=0;i<m;i++) if(A[i][enter]>1e-9){const r=A[i][NC2]/A[i][enter]; if(r<br-1e-12){br=r;leave=i;tie=false;}else if(Math.abs(r-br)<1e-12)tie=true;}
+    if(leave===-1){status='unbounded';msg='Ilimitado.';break;}
+    const dec={enter,leave,ratio:br,tie};
+    const pv=A[leave][enter];
+    for(let j=0;j<=NC2;j++)A[leave][j]/=pv;
+    for(let i=0;i<m;i++){if(i===leave)continue;const f=A[i][enter];if(Math.abs(f)<1e-12)continue;for(let j=0;j<=NC2;j++)A[i][j]-=f*A[leave][j];}
+    B[leave]=enter;iter++;
+    msg=`${cols2[enter].name} entra, linha ${leave+1} sai (razão ${nf(br)}).`;
+    frames2.push({T:A.map(r=>r.slice()),basic:B.slice(),zr:zR2(A,B),status,msg,dec});
+  }
+  const last=frames2[frames2.length-1];last.status=status;last.msg=msg;
+  frames2.forEach(f => {
+    f.colNames = cols2.map(c => c.name);
+    f.basicNames = f.basic.map(b => cols2[b] ? cols2[b].name : '?');
+  });
+  return { colsInfo: cols2, frames1, frames2, feasible:true, sumArt, sense, obj };
+}
+
+/* ============ UI ============ */
+(function () {
+  const PRESETS = {
+    aula: {
+      obj: [8, 12], sense: 'min',
+      cons: [
+        { a: [1, 2], op: '>=', b: 5 },
+        { a: [1, 1], op: '>=', b: 3 },
+      ],
+      label: 'min f = 8x₁ + 12x₂ &nbsp; s.a &nbsp; x₁ + 2x₂ ≥ 5 &nbsp;·&nbsp; x₁ + x₂ ≥ 3',
+    },
+    petroleo: {
+      obj: [8, 12], sense: 'min',
+      cons: [
+        { a: [1, 2], op: '>=', b: 5 },
+        { a: [1, 1], op: '>=', b: 3 },
+      ],
+      label: 'Compra e refino de petróleo — min f = 8x₁ + 12x₂ &nbsp; s.a &nbsp; x₁ + 2x₂ ≥ 5 &nbsp;·&nbsp; x₁ + x₂ ≥ 3',
+    },
+    inviavel: {
+      obj: [1, 1], sense: 'max',
+      cons: [
+        { a: [1, 1], op: '<=', b: 2 },
+        { a: [1, 1], op: '>=', b: 5 },
+      ],
+      label: 'max f = x₁ + x₂ &nbsp; s.a &nbsp; x₁ + x₂ ≤ 2 &nbsp;·&nbsp; x₁ + x₂ ≥ 5 &nbsp; (impossível)',
+    },
+  };
+
+  let model = null, name = 'aula';
+  let i1 = 0, i2 = 0;
+
+  // Renderiza usando os nomes gravados NO PRÓPRIO quadro (colNames/basicNames),
+  // para que a fase 1 (com artificiais) e a fase 2 (sem) nunca se confundam.
+  function renderTable(container, frame) {
+    const names = frame.colNames;
+    const NC = names.length;
+    let h = '<table class="tab-simplex"><thead><tr><th class="basic">Base</th>';
+    names.forEach(n => h += `<th>${n}</th>`);
+    h += '<th>b</th><th style="text-align:left">razão</th></tr></thead><tbody>';
+    const dec = frame.dec;
+    for (let i = 0; i < frame.T.length; i++) {
+      const isOut = dec && i === dec.leave;
+      h += `<tr class="${isOut ? 'row-out' : ''}"><td class="basic">${frame.basicNames[i]}</td>`;
+      for (let j = 0; j < NC; j++) {
+        const isPiv = isOut && dec && j === dec.enter;
+        const cls = isPiv ? 'piv' : (dec && j === dec.enter ? 'col-in' : '');
+        h += `<td class="${cls}">${nf(frame.T[i][j])}</td>`;
+      }
+      h += `<td>${nf(frame.T[i][NC])}</td>`;
+      let rt = '';
+      if (dec) rt = frame.T[i][dec.enter] > 1e-9 ? nf(frame.T[i][NC] / frame.T[i][dec.enter]) : '—';
+      h += `<td style="text-align:left;color:#8b98a5;font-size:12px">${rt}</td></tr>`;
+    }
+    h += '<tr class="obj-row"><td class="basic">z</td>';
+    for (let j = 0; j < NC; j++) h += `<td class="${dec && j === dec.enter ? 'col-in' : ''}">${nf(frame.zr[j])}</td>`;
+    h += `<td>${nf(frame.zr[NC])}</td><td></td></tr>`;
+    h += '</tbody></table>';
+    container.innerHTML = h;
+  }
+
+  function build(name) {
+    const p = PRESETS[name];
+    document.getElementById('tpProblem').innerHTML = '<b>' + p.label + '</b>';
+    model = solveTwoPhase(p.obj, p.sense, p.cons);
+    i1 = 0; i2 = 0;
+    document.getElementById('tpPhase2').style.display = 'none';
+    document.getElementById('tpVerdict').style.display = 'none';
+    document.getElementById('tpPhase1').style.display = 'block';
+    paintPhase1();
+    if (!model.feasible) {
+      document.getElementById('tpMsg1').className = 'danger';
+      document.getElementById('tpMsg1Txt').innerHTML =
+        `<b>Inviável.</b> Ao fim da fase 1, a soma das artificiais é ${nf(model.sumArt)} > 0 — não existe solução viável para o problema original. Nada a otimizar.`;
+      document.getElementById('tpPhase2').style.display = 'none';
+      document.getElementById('tpVerdict').style.display = 'none';
+      document.getElementById('tpNext1').disabled = false;
+      document.getElementById('tpRun1').disabled = false;
+      return;
+    }
+    document.getElementById('tpNext1').disabled = false;
+    document.getElementById('tpRun1').disabled = false;
+  }
+
+  function paintPhase1() {
+    const f = model.frames1[i1];
+    renderTable(document.getElementById('tpT1'), f);
+    const isLast = i1 === model.frames1.length - 1;
+    document.getElementById('tpMsg1').className = isLast ? 'tip' : 'note';
+    document.getElementById('tpMsg1Txt').innerHTML = f.msg || '—';
+    document.getElementById('tpNext1').disabled = isLast;
+    if (isLast && model.feasible) {
+      document.getElementById('tpMsg1Txt').innerHTML =
+        '<b>Fase 1 concluída.</b> Todas as artificiais saíram da base (soma = 0). A base atual é uma SBV do problema real. Siga para a fase 2.';
+      document.getElementById('tpPhase2').style.display = 'block';
+      paintPhase2();
+    }
+  }
+
+  function paintPhase2() {
+    if (!model.frames2) return;
+    const f = model.frames2[i2];
+    renderTable(document.getElementById('tpT2'), f);
+    const isLast = i2 === model.frames2.length - 1;
+    document.getElementById('tpMsg2').className = isLast ? 'tip' : 'note';
+    document.getElementById('tpMsg2Txt').innerHTML = f.msg || '—';
+    document.getElementById('tpNext2').disabled = isLast;
+    if (isLast) {
+      // veredito
+      const vb = document.getElementById('tpVerdict');
+      vb.style.display = 'block';
+      const val = f.zr[f.colNames.length];
+      let sols = [];
+      f.basicNames.forEach((name, i) => {
+        if (name.startsWith('x')) {
+          sols.push(`${name} = ${nf(f.T[i][f.colNames.length])}`);
+        }
+      });
+      // variáveis de decisão que não estão na base valem 0
+      f.colNames.forEach(name => {
+        if (name.startsWith('x') && !sols.some(s => s.startsWith(name + ' '))) {
+          sols.push(`${name} = 0`);
+        }
+      });
+      if (f.status === 'optimal') {
+        vb.className = 'tip';
+        // o solver usa max(−f) para minimização; exibimos o f real
+        const realVal = model.sense === 'min' ? -val : val;
+        document.getElementById('tpVerdictTxt').innerHTML =
+          `<b>Ótimo.</b> ${sols.join(' · ')} &nbsp;e&nbsp; f = <b>${nf(realVal)}</b>.`;
+      } else if (f.status === 'unbounded') {
+        vb.className = 'danger';
+        document.getElementById('tpVerdictTxt').innerHTML = '<b>Objetivo ilimitado</b> — não há solução ótima finita.';
+      } else {
+        vb.className = 'warn';
+        document.getElementById('tpVerdictTxt').innerHTML = 'Execute até o fim para ver o veredito.';
+      }
+    }
+  }
+
+  document.getElementById('tpNext1').addEventListener('click', () => { if (i1 < model.frames1.length - 1) { i1++; paintPhase1(); } });
+  document.getElementById('tpRun1').addEventListener('click', () => { i1 = model.frames1.length - 1; paintPhase1(); });
+  document.getElementById('tpReset1').addEventListener('click', () => build(name));
+  document.getElementById('tpNext2')?.addEventListener('click', () => { if (i2 < model.frames2.length - 1) { i2++; paintPhase2(); } });
+  document.getElementById('tpRun2')?.addEventListener('click', () => { i2 = model.frames2.length - 1; paintPhase2(); });
+
+  document.querySelectorAll('#tpChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#tpChips .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      name = c.dataset.p;
+      build(name);
+    });
+  });
+
+  build('aula');
+})();
+</script>
+</body>
+</html>

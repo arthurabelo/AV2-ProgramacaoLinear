@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulário essencial — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="resumo">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Consultar rápido · imprimível</div>
+        <h1>Formulário essencial</h1>
+        <p class="lead">Uma página com tudo o que você precisa ter na cabeça. Use o botão de imprimir para levar em papel.</p>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn primary" onclick="window.print()">Imprimir / salvar PDF</button>
+        </div>
+      </div>
+
+      <h2>Forma padrão do PPL</h2>
+      <div class="formula">
+        max &nbsp; z = c₁x₁ + c₂x₂ + … + cₙxₙ<br>
+        s.a<br>
+        a₁₁x₁ + … + a₁ₙxₙ ≤ b₁<br>
+        &nbsp; ⋮<br>
+        aₘ₁x₁ + … + aₘₙxₙ ≤ bₘ<br>
+        x₁, …, xₙ ≥ 0
+      </div>
+      <p class="small"><b>Forma padrão</b> (para o Simplex): todas as restrições são igualdades, todas as variáveis ≥ 0, b ≥ 0. Chega-se a ela com folgas.</p>
+
+      <h2>Conversão para a forma padrão</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Original</th><th>Converte para</th><th>Variável adicionada</th></tr></thead>
+          <tbody>
+            <tr><td>a·x ≤ b</td><td>a·x + s = b</td><td>folga s ≥ 0</td></tr>
+            <tr><td>a·x ≥ b</td><td>a·x − e = b</td><td>excesso e ≥ 0</td></tr>
+            <tr><td>a·x = b</td><td>a·x = b</td><td>nenhuma</td></tr>
+            <tr><td>min f</td><td>max −f</td><td>−</td></tr>
+            <tr><td>xᵢ livre</td><td>xᵢ = xᵢ⁺ − xᵢ⁻</td><td>duas variáveis ≥ 0</td></tr>
+            <tr><td>bᵢ &lt; 0</td><td>multiplica a linha por −1</td><td>inverte o sentido da desigualdade</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Simplex — o algoritmo</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h4>Critério de entrada</h4>
+          <p class="small" style="margin:0">Na linha <code>z</code>, escolhe-se a variável com o coeficiente <b>mais negativo</b>.<br>
+          (equivale ao maior ganho por unidade)</p>
+        </div>
+        <div class="card">
+          <h4>Critério de saída</h4>
+          <p class="small" style="margin:0">Menor razão <code>bᵢ / aᵢₖ</code> entre as linhas com <code>aᵢₖ &gt; 0</code>.<br>
+          Empate → escolha arbitrária (degeneração).</p>
+        </div>
+        <div class="card">
+          <h4>Pivotear</h4>
+          <p class="small" style="margin:0">1. Divida a linha do pivô pelo pivô.<br>
+          2. Para as demais linhas: <code>Lᵢ ← Lᵢ − aᵢₖ·L_pivô</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Parar quando</h4>
+          <p class="small" style="margin:0">Todos os coeficientes de <code>z</code> forem ≥ 0 → <b>ótimo</b>.<br>
+          Coeficiente 0 em variável não-básica → <b>múltiplos ótimos</b>.</p>
+        </div>
+      </div>
+
+      <div class="formula">
+        Lê a solução: &nbsp; <span class="hl">básicas = coluna b</span> &nbsp;·&nbsp; não-básicas = 0 &nbsp;·&nbsp; z = valor na linha z
+      </div>
+
+      <h2>Casos especiais</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Situação</th><th>Sinal no Simplex</th></tr></thead>
+          <tbody>
+            <tr><td>Empate na entrada</td><td>dois coeficientes iguais na linha z → escolha arbitrária</td></tr>
+            <tr><td>Degeneração</td><td>empate na razão mínima → alguma básica = 0</td></tr>
+            <tr><td>Múltiplos ótimos</td><td>coeficiente 0 na linha z de variável não-básica</td></tr>
+            <tr><td>Ilimitado</td><td>coluna que entra sem nenhum <code>aᵢₖ &gt; 0</code></td></tr>
+            <tr><td>Inviável</td><td>artificial fica positiva na base (fim da fase 1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>M Grande &amp; duas fases</h2>
+      <div class="formula">
+        <b>M Grande:</b> &nbsp; max z − M·Σaᵢ &nbsp;&nbsp; (M ≫ qualquer coeficiente)<br>
+        <b>Duas fases:</b> &nbsp; Fase 1 → min Σaᵢ &nbsp;|&nbsp; se min = 0, viável &nbsp;;&nbsp; Fase 2 → otimizar o z real
+      </div>
+      <p class="small">Regra: <code>≤</code> → folga · <code>≥</code> → excesso + artificial · <code>=</code> → artificial.</p>
+
+      <h2>Convexidade</h2>
+      <div class="formula">
+        S convexo ⇔ (1−α)x + αy ∈ S &nbsp;∀x,y ∈ S, α ∈ [0,1]<br>
+        conv(S) = menor conjunto convexo que contém S
+      </div>
+      <p class="small"><b>Compacto</b> = fechado + limitado. <b>Weierstrass:</b> f contínua em compacto atinge mínimo e máximo.</p>
+      <p class="small"><b>Separação:</b> S convexo fechado, y ∉ S ⇒ ∃p ≠ 0, α com pᵗy &gt; α e pᵗx ≤ α ∀x ∈ S.</p>
+
+      <h2>Sistemas lineares</h2>
+      <div class="formula">
+        <b>Substituição retroativa:</b> &nbsp; xᵢ = (bᵢ − Σ<sub>j&gt;i</sub> aᵢⱼxⱼ) / aᵢᵢ<br>
+        <b>Jacobi:</b> &nbsp; xᵢ⁽ᵏ⁺¹⁾ = (bᵢ − Σ<sub>j≠i</sub> aᵢⱼxⱼ⁽ᵏ⁾) / aᵢᵢ<br>
+        <b>Gauss-Seidel:</b> usa xⱼ⁽ᵏ⁺¹⁾ já calculados para j &lt; i
+      </div>
+      <p class="small"><b>Critério das linhas (suficiente):</b> |aᵢᵢ| &gt; Σ<sub>j≠i</sub> |aᵢⱼ| → converge.<br>
+      <b>Gauss-Jordan:</b> identidade no lugar de A; b vira a solução.<br>
+      <b>Resíduo:</b> r = b − A·x̄.</p>
+
+      <h2>Notações que confundem</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Termo</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td>SBV</td><td>Solução básica viável (= vértice)</td></tr>
+            <tr><td>VB / VNB</td><td>Variável básica / não-básica</td></tr>
+            <tr><td>Folga / excesso</td><td>variável que transforma ≤ / ≥ em igualdade</td></tr>
+            <tr><td>Artificial</td><td>variável temporária para gerar base inicial</td></tr>
+            <tr><td>Pivô</td><td>elemento <code>aᵢₖ</code> usado na troca de base</td></tr>
+            <tr><td>Curva de nível</td><td>conjunto {x : cᵗx = z} — reta paralela ao gradiente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>PL.boot();</script>
+</body>
+</html>

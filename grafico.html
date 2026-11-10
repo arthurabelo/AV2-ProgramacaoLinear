@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolução gráfica 2D e 3D — Guia da 2ª Prova</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="grafico">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div class="eyebrow">Unidade VII · Resolução gráfica</div>
+        <h1>Resolução gráfica</h1>
+        <p class="lead">Em duas variáveis o problema inteiro é visível. Desenhe as restrições, veja a região factível nascer da interseção dos semiplanos, e observe a curva de nível "varrer" a região até encostar no vértice ótimo. Depois, o mesmo raciocínio em 3D.</p>
+      </div>
+
+      <h2>1 · O roteiro em 4 passos</h2>
+      <ol class="step-list">
+        <li><b>Desenhe cada restrição como uma reta.</b> Troque a desigualdade por igualdade: <code>a₁x₁ + a₂x₂ = b</code>. Ache dois pontos (cortes nos eixos) e trace.</li>
+        <li><b>Escolha o semiplano.</b> Teste a origem (0,0): se ela satisfaz, pinte o lado que contém a origem. Para <code>≤</code> o lado viável é o "de baixo/à esquerda".</li>
+        <li><b>Intersecte tudo.</b> A região factível é a interseção de todos os semiplanos viáveis, incluindo <code>x₁ ≥ 0, x₂ ≥ 0</code>.</li>
+        <li><b>Encontre o ótimo.</b> Suba a curva de nível na direção do gradiente até o último ponto de contato com a região. Esse ponto é um vértice.</li>
+      </ol>
+
+      <div class="formula">
+        f(x₁,x₂) = c₁x₁ + c₂x₂ &nbsp;⇒&nbsp; curvas de nível são retas <span class="hl">c₁x₁ + c₂x₂ = z</span><br>
+        O gradiente <span class="hl">∇f = (c₁, c₂)</span> aponta para o crescimento de f.
+      </div>
+
+      <h2>2 · Laboratório 2D — monte seu PPL</h2>
+      <p>Escolha um dos problemas clássicos do material ou digite as restrições. O solver calcula os vértices, a região e o ótimo.</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Solver gráfico interativo</span>
+          <span class="lab-hint">edite e observe</span>
+        </div>
+        <div class="lab-body">
+          <div class="chips" id="presetChips" style="margin-bottom:16px">
+            <button class="chip on" data-p="fazendeiro">Fazendeiro</button>
+            <button class="chip" data-p="brinquedos">Brinquedos</button>
+            <button class="chip" data-p="transformador">Transformadores</button>
+            <button class="chip" data-p="camisas">Camisas (múltiplas)</button>
+            <button class="chip" data-p="ilimitado">Ilimitado</button>
+            <button class="chip" data-p="inviavel">Inviável</button>
+          </div>
+
+          <div class="lab-grid">
+            <div>
+              <div class="canvas-wrap"><canvas id="cvLP" style="height:460px"></canvas></div>
+              <div class="legend" style="margin-top:10px">
+                <span><i style="background:#0f766e"></i>restrição</span>
+                <span><i style="background:rgba(15,118,110,.28)"></i>região factível</span>
+                <span><i class="dot" style="background:#0f766e"></i>vértice</span>
+                <span><i class="dot" style="background:#b42318"></i>ótimo</span>
+                <span><i style="background:#6d28d9"></i>gradiente</span>
+                <span><i style="background:#b45309"></i>curva de nível z</span>
+              </div>
+            </div>
+            <div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Sentido</span></div>
+                <div class="chips">
+                  <button class="chip on" id="senseMax">Max</button>
+                  <button class="chip" id="senseMin">Min</button>
+                </div>
+              </div>
+
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Função objetivo</span><span class="val" id="objVal">5x₁ + 2x₂</span></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <input type="number" id="c1" step="0.5" value="5" title="coeficiente x1">
+                  <input type="number" id="c2" step="0.5" value="2" title="coeficiente x2">
+                </div>
+              </div>
+
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Restrições</span></div>
+                <div id="consBox"></div>
+                <button class="btn btn-sm" id="addCon" style="margin-top:6px;width:100%">+ adicionar restrição</button>
+              </div>
+
+              <div class="ctrl">
+                <label class="toggle"><input type="checkbox" id="showLvl" checked> mostrar curva de nível</label>
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Nível z</span><span class="val" id="lvlOut">—</span></div>
+                <input type="range" id="zSlider" min="0" max="100" value="40">
+              </div>
+
+              <div id="resultBox" class="tip" style="margin-top:8px">
+                <span class="callout-title">Resultado</span>
+                <span id="resultTxt">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>3 · Os três desfechos geométricos</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <span class="card-tag" style="color:var(--good)">Ótimo único</span>
+          <h4>Vértice</h4>
+          <p class="small" style="margin:0">A curva de nível tangencia a região num único ponto. É o caso mais comum e o que você vai encontrar quase sempre.</p>
+        </div>
+        <div class="card">
+          <span class="card-tag" style="color:var(--warn)">Múltiplos ótimos</span>
+          <h4>Aresta</h4>
+          <p class="small" style="margin:0">A curva de nível é paralela a uma aresta da região. Todo o segmento é ótimo — infinitas soluções, mesmo valor de z. Teste o preset "Camisas".</p>
+        </div>
+        <div class="card">
+          <span class="card-tag" style="color:var(--bad)">Nenhum ótimo</span>
+          <h4>Inviável ou ilimitado</h4>
+          <p class="small" style="margin:0">Região vazia (inviável) ou região aberta na direção do gradiente (objetivo ilimitado). Não há solução ótima finita.</p>
+        </div>
+      </div>
+
+      <div class="warn">
+        <span class="callout-title">Como reconhecer na prova</span>
+        <b>Ilimitado:</b> a região "escapa" para o infinito na direção do gradiente. No Simplex, equivale a uma coluna com coeficiente negativo na linha z mas <em>nenhum</em> coeficiente positivo na coluna.<br>
+        <b>Inviável:</b> os semiplanos não se intersectam. No Simplex, as variáveis artificiais não saem da base com valor zero.<br>
+        <b>Múltiplas soluções:</b> a curva de nível coincide com uma restrição de fronteira. No Simplex, uma variável não-básica fica com coeficiente 0 na linha z.
+      </div>
+
+      <h2>4 · Por que o ótimo é vértice — em 3D</h2>
+      <p>Em 3D a intuição fica mais forte. A região factível é um poliedro; as curvas de nível viram <em>planos</em> paralelos. Ao subir o plano na direção do gradiente, o último contato acontece num <strong>vértice</strong> (ou numa aresta/face, no caso de múltiplos ótimos).</p>
+
+      <div class="lab">
+        <div class="lab-head">
+          <span class="dot"></span>
+          <span class="lab-title">Poliedro factível em 3D</span>
+          <span class="lab-hint">arraste para girar</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-grid">
+            <div class="canvas-wrap"><canvas id="cv3D" style="height:440px"></canvas></div>
+            <div>
+              <div class="ctrl">
+                <label class="toggle"><input type="checkbox" id="d3faces" checked> faces do poliedro</label>
+              </div>
+              <div class="ctrl">
+                <label class="toggle"><input type="checkbox" id="d3plane" checked> plano de nível</label>
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Nível do plano</span><span class="val" id="d3z">—</span></div>
+                <input type="range" id="d3level" min="0" max="100" value="25">
+              </div>
+              <div class="ctrl">
+                <div class="ctrl-label"><span>Rotacionar</span></div>
+                <div class="btn-row">
+                  <button class="btn btn-sm" id="d3reset">Recentrar</button>
+                  <button class="btn btn-sm" id="d3spin">Girar</button>
+                </div>
+              </div>
+              <div class="formula" style="font-size:.94rem;padding:10px 13px">
+                max f = 2x₁ + 3x₂ + 1.5x₃<br>
+                s.a<br>
+                x₁ + x₂ + x₃ ≤ 4<br>
+                2x₁ + x₂ ≤ 5<br>
+                x₂ + 2x₃ ≤ 5<br>
+                x ≥ 0
+              </div>
+              <div id="d3Box" class="tip" style="margin-top:10px">
+                <span class="callout-title">Ótimo</span>
+                <span id="d3Txt">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>5 · A conta que você fará na prova</h2>
+      <p>Encontrar o ótimo à mão é resolver os sistemas de duas equações nos vértices candidatos. No exemplo do fazendeiro:</p>
+      <div class="formula">
+        max f = 5x₁ + 2x₂<br>
+        s.a &nbsp; x₁ ≤ 3 &nbsp;·&nbsp; x₂ ≤ 4 &nbsp;·&nbsp; x₁ + 2x₂ ≤ 9 &nbsp;·&nbsp; x₁, x₂ ≥ 0
+      </div>
+      <p>Os candidatos são os vértices: (0,0), (3,0), (3,3), (1,4), (0,4). Basta avaliar:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Vértice</th><th>f = 5x₁ + 2x₂</th></tr></thead>
+          <tbody>
+            <tr><td>(0, 0)</td><td>0</td></tr>
+            <tr><td>(3, 0)</td><td>15</td></tr>
+            <tr><td>(3, 3)</td><td><b>21</b> ← ótimo</td></tr>
+            <tr><td>(1, 4)</td><td>13</td></tr>
+            <tr><td>(0, 4)</td><td>8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Nenhum outro ponto supera 21 porque, pela convexidade, o máximo de uma função linear sobre um polígono ocorre num vértice.</p>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">Guia de estudo — Programação Linear · UFPI</footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>
+PL.boot();
+
+/* ================= solver 2D ================= */
+(function () {
+  const cv = document.getElementById('cvLP');
+  const plot = new PL.Plot2D(cv, { xmin: -0.7, xmax: 6.2, ymin: -0.7, ymax: 6.2 });
+
+  const PRESETS = {
+    fazendeiro: {
+      sense: 'max', obj: [5, 2],
+      cons: [
+        { a: 1, b: 0, c: 3, op: '<=' },
+        { a: 0, b: 1, c: 4, op: '<=' },
+        { a: 1, b: 2, c: 9, op: '<=' },
+      ],
+      vmax: 6,
+    },
+    brinquedos: {
+      sense: 'max', obj: [12, 60],
+      cons: [
+        { a: 0.25, b: 0.50, c: 36, op: '<=' },
+        { a: 0.10, b: 0.75, c: 22, op: '<=' },
+        { a: 0.10, b: 0.40, c: 15, op: '<=' },
+      ],
+      vmax: 80,
+    },
+    transformador: {
+      sense: 'max', obj: [1, 1],
+      cons: [
+        { a: 2, b: 1, c: 8, op: '<=' },
+        { a: 1, b: 2, c: 7, op: '<=' },
+        { a: 0, b: 1, c: 2, op: '<=' },
+      ],
+      vmax: 5,
+    },
+    camisas: {
+      sense: 'max', obj: [2, 4],
+      cons: [
+        { a: 1, b: 1, c: 4, op: '<=' },
+        { a: 1, b: 2, c: 8, op: '<=' },
+      ],
+      vmax: 6,
+    },
+    ilimitado: {
+      sense: 'max', obj: [3, 2],
+      cons: [
+        { a: -1, b: 1, c: 2, op: '<=' },
+      ],
+      vmax: 6,
+    },
+    inviavel: {
+      sense: 'max', obj: [1, 1],
+      cons: [
+        { a: 1, b: 1, c: 2, op: '<=' },
+        { a: 1, b: 1, c: 5, op: '>=' },
+      ],
+      vmax: 6,
+    },
+  };
+
+  let state = JSON.parse(JSON.stringify(PRESETS.fazendeiro));
+  let showLvl = true;
+
+  function renderCons() {
+    const box = document.getElementById('consBox');
+    box.innerHTML = '';
+    state.cons.forEach((k, i) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display:grid;grid-template-columns:26px 42px 20px 42px 18px 46px 24px;gap:4px;margin-bottom:5px;align-items:center;font-family:var(--mono);font-size:12px';
+      div.innerHTML = `
+        <input type="number" value="${k.a}" step="0.25" data-i="${i}" data-f="a" style="padding:4px 5px;font-size:12px">
+        <span style="color:#5a6875">x₁+</span>
+        <input type="number" value="${k.b}" step="0.25" data-i="${i}" data-f="b" style="padding:4px 5px;font-size:12px">
+        <span style="color:#5a6875">x₂</span>
+        <select data-i="${i}" data-f="op" style="padding:3px;font-size:11px">
+          <option ${k.op==='<='?'selected':''}>≤</option>
+          <option ${k.op==='>='?'selected':''}>≥</option>
+          <option ${k.op==='='?'selected':''}>=</option>
+        </select>
+        <input type="number" value="${k.c}" step="0.5" data-i="${i}" data-f="c" style="padding:4px 5px;font-size:12px">
+        <button class="btn" style="padding:2px 5px;font-size:12px;line-height:1" data-del="${i}">×</button>
+      `;
+      box.appendChild(div);
+    });
+    box.querySelectorAll('input,select').forEach(el => {
+      el.addEventListener('input', () => {
+        const i = +el.dataset.i, f = el.dataset.f;
+        let v = el.value;
+        if (f === 'op') {
+          v = v === '≤' ? '<=' : v === '≥' ? '>=' : '=';
+        } else {
+          v = +v;
+          if (!isFinite(v)) return;
+        }
+        state.cons[i][f] = v;
+        draw();
+      });
+    });
+    box.querySelectorAll('[data-del]').forEach(b => {
+      b.addEventListener('click', () => {
+        state.cons.splice(+b.dataset.del, 1);
+        renderCons(); draw();
+      });
+    });
+  }
+
+  function autoView() {
+    // escolhe janela com base nas restrições
+    let mx = 1;
+    state.cons.forEach(k => {
+      if (Math.abs(k.a) > 1e-9) mx = Math.max(mx, Math.abs(k.c / k.a));
+      if (Math.abs(k.b) > 1e-9) mx = Math.max(mx, Math.abs(k.c / k.b));
+    });
+    mx = Math.min(Math.max(mx * 1.25, 3), 120);
+    plot.o.xmin = -mx * 0.09;
+    plot.o.ymin = -mx * 0.09;
+    plot.o.xmax = mx;
+    plot.o.ymax = mx;
+  }
+
+  function draw() {
+    autoView();
+    plot.resize().clear().grid().axes();
+    const { ctx } = plot;
+
+    // semiplanos sombreados
+    state.cons.forEach(k => {
+      plot.halfplane(k.a, k.b, k.c, { fill: 'rgba(15,118,110,.045)', stroke: false, op: k.op });
+    });
+
+    const res = PL.solveLP2D(state.cons, state.obj, state.sense);
+
+    // região factível
+    if (res.feasible && res.hull.length >= 3) {
+      plot.polygon(res.hull, { fill: 'rgba(15,118,110,.15)', stroke: '#0f766e', width: 2.2 });
+    }
+
+    // retas
+    state.cons.forEach(k => {
+      plot.line(k.a, k.b, k.c, { color: 'rgba(15,118,110,.7)', width: 1.7 });
+    });
+
+    // curva de nível
+    if (showLvl && res.feasible) {
+      const zmax = res.optimum ? res.optimum.z : 1;
+      const zmin = res.vertices.length ? Math.min(...res.vertices.map(v => v.z)) : 0;
+      const pct = +document.getElementById('zSlider').value / 100;
+      const z = zmin + (zmax - zmin) * pct;
+      plot.line(state.obj[0], state.obj[1], z, { color: '#b45309', width: 2.2, dash: [] });
+      document.getElementById('lvlOut').textContent = 'z = ' + z.toFixed(2);
+    } else {
+      document.getElementById('lvlOut').textContent = '—';
+    }
+
+    // gradiente
+    const cx = (plot.o.xmax + plot.o.xmin) / 2, cy = (plot.o.ymax + plot.o.ymin) / 2;
+    const sc = (plot.o.xmax - plot.o.xmin) * 0.09 / (Math.hypot(state.obj[0], state.obj[1]) || 1);
+    plot.arrow(plot.o.xmin * 0.4 + cx * 0.2, plot.o.ymin * 0.4 + cy * 0.2,
+      plot.o.xmin * 0.4 + cx * 0.2 + state.obj[0] * sc,
+      plot.o.ymin * 0.4 + cy * 0.2 + state.obj[1] * sc,
+      { color: '#6d28d9', width: 2 });
+    plot.text(plot.o.xmin * 0.4 + cx * 0.2 + state.obj[0] * sc,
+      plot.o.ymin * 0.4 + cy * 0.2 + state.obj[1] * sc,
+      '∇f', { size: 12, weight: 700, color: '#6d28d9', dx: 6 });
+
+    // vértices
+    res.vertices.forEach(v => {
+      const isOpt = res.optimum && Math.abs(v.x - res.optimum.x) < 1e-6 && Math.abs(v.y - res.optimum.y) < 1e-6;
+      if (isOpt) return;
+      plot.point(v.x, v.y, { color: '#0f766e', r: 3.4, halo: false });
+    });
+    if (res.optimum) {
+      plot.point(res.optimum.x, res.optimum.y, {
+        color: '#b42318', r: 6.5, ring: '#fff',
+        label: `(${PL.fmt(res.optimum.x, 2)}, ${PL.fmt(res.optimum.y, 2)})`, labelDx: 10, labelWeight: 700,
+      });
+    }
+
+    // texto de resultado
+    const rb = document.getElementById('resultBox');
+    const rt = document.getElementById('resultTxt');
+    if (!res.feasible) {
+      rb.className = 'danger';
+      rt.innerHTML = '<b>Inviável.</b> Os semiplanos não têm ponto em comum — a região factível é vazia. Não existe solução.';
+    } else if (res.unbounded) {
+      rb.className = 'warn';
+      rt.innerHTML = '<b>Objetivo ilimitado.</b> A região é aberta na direção do gradiente: f pode crescer (ou decrescer) sem limite. Não há ótimo finito.';
+    } else if (res.multiple) {
+      rb.className = 'warn';
+      rt.innerHTML = `<b>Múltiplos ótimos.</b> A curva de nível é paralela a uma aresta. Ótimos: (${PL.fmt(res.optimum.x,2)}, ${PL.fmt(res.optimum.y,2)}) até (${PL.fmt(res.second.x,2)}, ${PL.fmt(res.second.y,2)}), todos com z = <b>${PL.fmt(res.optimum.z,3)}</b>.`;
+    } else {
+      rb.className = 'tip';
+      rt.innerHTML = `<b>Ótimo único</b> em (${PL.fmt(res.optimum.x,2)}, ${PL.fmt(res.optimum.y,2)}) com z = <b>${PL.fmt(res.optimum.z,3)}</b>. ${res.vertices.length} vértices testados.`;
+    }
+  }
+
+  function loadPreset(name) {
+    state = JSON.parse(JSON.stringify(PRESETS[name]));
+    document.getElementById('c1').value = state.obj[0];
+    document.getElementById('c2').value = state.obj[1];
+    document.getElementById('senseMax').classList.toggle('on', state.sense === 'max');
+    document.getElementById('senseMin').classList.toggle('on', state.sense === 'min');
+    renderCons(); draw();
+  }
+
+  document.querySelectorAll('#presetChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#presetChips .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      loadPreset(c.dataset.p);
+    });
+  });
+
+  document.getElementById('c1').addEventListener('input', e => { state.obj[0] = +e.target.value; document.getElementById('objVal').textContent = `${state.obj[0]}x₁ + ${state.obj[1]}x₂`; draw(); });
+  document.getElementById('c2').addEventListener('input', e => { state.obj[1] = +e.target.value; document.getElementById('objVal').textContent = `${state.obj[0]}x₁ + ${state.obj[1]}x₂`; draw(); });
+  document.getElementById('senseMax').addEventListener('click', () => { state.sense = 'max';
+    document.getElementById('senseMax').classList.add('on'); document.getElementById('senseMin').classList.remove('on'); draw(); });
+  document.getElementById('senseMin').addEventListener('click', () => { state.sense = 'min';
+    document.getElementById('senseMin').classList.add('on'); document.getElementById('senseMax').classList.remove('on'); draw(); });
+  document.getElementById('addCon').addEventListener('click', () => { state.cons.push({ a: 1, b: 1, c: 3, op: '<=' }); renderCons(); draw(); });
+  document.getElementById('showLvl').addEventListener('change', e => { showLvl = e.target.checked; draw(); });
+  document.getElementById('zSlider').addEventListener('input', draw);
+
+  cv.dataset.autofit = '1'; cv._rerender = draw;
+  renderCons(); draw();
+})();
+
+/* ================= 3D poliedro ================= */
+(function () {
+  const cv = document.getElementById('cv3D');
+  const r3 = new PL.Render3D(cv, { rotX: -0.45, rotZ: 0.8, dist: 6.4 });
+  const cons = [
+    { a: 1, b: 1, c: 1, b_: 4 },
+    { a: 2, b: 1, c: 0, b_: 5 },
+    { a: 0, b: 1, c: 2, b_: 5 },
+  ];
+  const obj = [2, 3, 1.5];
+
+  // vértices = interseção de 3 planos entre {x=0,y=0,z=0,restrições}
+  const planes = [
+    { n: [1, 0, 0], b: 0, name: 'x₁=0' },
+    { n: [0, 1, 0], b: 0, name: 'x₂=0' },
+    { n: [0, 0, 1], b: 0, name: 'x₃=0' },
+    { n: [1, 1, 1], b: 4, name: 'R1' },
+    { n: [2, 1, 0], b: 5, name: 'R2' },
+    { n: [0, 1, 2], b: 5, name: 'R3' },
+  ];
+
+  function det3(m) {
+    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+      - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+      + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  }
+  function solve3(M, v) {
+    const D = det3(M);
+    if (Math.abs(D) < 1e-9) return null;
+    const rep = (col) => M.map((row, i) => row.map((x, j) => (j === col ? v[i] : x)));
+    return [det3(rep(0)) / D, det3(rep(1)) / D, det3(rep(2)) / D];
+  }
+  function feasible(p) {
+    if (p[0] < -1e-7 || p[1] < -1e-7 || p[2] < -1e-7) return false;
+    for (const k of cons) if (k.a * p[0] + k.b * p[1] + k.c * p[2] > k.b_ + 1e-7) return false;
+    return true;
+  }
+
+  const V = [];
+  for (let i = 0; i < planes.length; i++)
+    for (let j = i + 1; j < planes.length; j++)
+      for (let k = j + 1; k < planes.length; k++) {
+        const p = solve3([planes[i].n, planes[j].n, planes[k].n], [planes[i].b, planes[j].b, planes[k].b]);
+        if (p && feasible(p)) {
+          if (!V.some(q => Math.hypot(q[0]-p[0], q[1]-p[1], q[2]-p[2]) < 1e-6)) V.push(p);
+        }
+      }
+
+  const zf = (p) => obj[0] * p[0] + obj[1] * p[1] + obj[2] * p[2];
+  let best = V[0];
+  V.forEach(p => { if (zf(p) > zf(best)) best = p; });
+  const zmax = zf(best);
+
+  // faces por plano (convex hull dos vértices que satisfazem a igualdade)
+  function facePoints(n, b) {
+    return V.filter(p => Math.abs(n[0]*p[0] + n[1]*p[1] + n[2]*p[2] - b) < 1e-6);
+  }
+  function orderFace(pts, n) {
+    if (pts.length < 3) return pts;
+    const c = [0, 0, 0];
+    pts.forEach(p => { c[0] += p[0]/pts.length; c[1] += p[1]/pts.length; c[2] += p[2]/pts.length; });
+    // base ortonormal no plano
+    let u = [1, 0, 0];
+    if (Math.abs(n[0]) > 0.9) u = [0, 1, 0];
+    const cross = (a, b2) => [a[1]*b2[2]-a[2]*b2[1], a[2]*b2[0]-a[0]*b2[2], a[0]*b2[1]-a[1]*b2[0]];
+    const norm = a => { const L = Math.hypot(...a); return a.map(x => x / L); };
+    let e1 = norm(cross(n, u));
+    let e2 = norm(cross(n, e1));
+    return pts.slice().sort((a, b2) => {
+      const da = [a[0]-c[0], a[1]-c[1], a[2]-c[2]];
+      const db = [b2[0]-c[0], b2[1]-c[1], b2[2]-c[2]];
+      const aa = Math.atan2(da[0]*e2[0]+da[1]*e2[1]+da[2]*e2[2], da[0]*e1[0]+da[1]*e1[1]+da[2]*e1[2]);
+      const bb = Math.atan2(db[0]*e2[0]+db[1]*e2[1]+db[2]*e2[2], db[0]*e1[0]+db[1]*e1[1]+db[2]*e1[2]);
+      return aa - bb;
+    });
+  }
+
+  const faceDefs = [];
+  planes.forEach(pl => {
+    const pts = facePoints(pl.n, pl.b);
+    if (pts.length >= 3) {
+      const ord = orderFace(pts, pl.n);
+      faceDefs.push({
+        idx: ord.map(p => V.findIndex(q => Math.hypot(q[0]-p[0], q[1]-p[1], q[2]-p[2]) < 1e-6)),
+        planName: pl.name,
+      });
+    }
+  });
+
+  const center = [1.6, 1.6, 1.2];
+  let spin = false, spinRAF = null;
+
+  function draw() {
+    r3.resize();
+    r3.clear();
+    r3.axis([0, 0, 0], 3.2);
+
+    const showFaces = document.getElementById('d3faces').checked;
+    const showPlane = document.getElementById('d3plane').checked;
+
+    // poliedro
+    const mesh = { vertices: V, faces: [], points: [] };
+    if (showFaces) {
+      faceDefs.forEach(f => {
+        mesh.faces.push({
+          idx: f.idx,
+          fill: 'rgba(15,118,110,.13)',
+          stroke: 'rgba(15,118,110,.55)',
+          width: 1,
+        });
+      });
+    } else {
+      mesh.edgeColor = '#0f766e';
+      mesh.edgeWidth = 2;
+      mesh.edges = [];
+      // arestas: pares que compartilham 2 planos ativos
+      for (let i = 0; i < V.length; i++)
+        for (let j = i + 1; j < V.length; j++) {
+          let cnt = 0;
+          planes.forEach(pl => {
+            const vi = Math.abs(pl.n[0]*V[i][0]+pl.n[1]*V[i][1]+pl.n[2]*V[i][2] - pl.b) < 1e-6;
+            const vj = Math.abs(pl.n[0]*V[j][0]+pl.n[1]*V[j][1]+pl.n[2]*V[j][2] - pl.b) < 1e-6;
+            if (vi && vj) cnt++;
+          });
+          if (cnt >= 2) mesh.edges.push([i, j]);
+        }
+    }
+
+    // pontos do vértice ótimo
+    mesh.points.push({
+      v: best, r: 6.5, color: '#b42318',
+      label: `ótimo (${best.map(x => PL.fmt(x,2)).join(', ')})`,
+    });
+    V.forEach(p => {
+      if (p === best) return;
+      mesh.points.push({ v: p, r: 3.6, color: '#0f766e' });
+    });
+
+    // plano de nível
+    if (showPlane) {
+      const pct = +document.getElementById('d3level').value / 100;
+      const zminv = Math.min(...V.map(zf));
+      const z = zminv + (zmax - zminv) * pct;
+      document.getElementById('d3z').textContent = 'z = ' + z.toFixed(2);
+      // plano 2x+3y+1.5z = z. borda dentro da bounding box
+      const corners = [];
+      const N = obj;
+      const clipBox = 5.5;
+      // parametrizar plano: pontos na cdela
+      const e1 = (Math.abs(N[0]) > 0.9) ? [0, 1, 0] : [1, 0, 0];
+      const cr = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+      const nm = a => Math.hypot(...a);
+      let u = cr(N, e1); u = u.map(x => x / nm(u));
+      let v = cr(N, u); v = v.map(x => x / nm(v));
+      const Nn = N.map(x => x / nm(N));
+      const origin = Nn.map(x => x * z / nm(N));
+      // amostrar quadrado grande e cortar fora da caixa
+      const S = 7;
+      const quad = [];
+      const M = 60;
+      for (let a = 0; a < M; a++) {
+        for (let b = 0; b < M; b++) {
+          const uu = -S + (2*S) * (a / (M-1));
+          const vv = -S + (2*S) * (b / (M-1));
+          const p = [origin[0]+u[0]*uu+v[0]*vv, origin[1]+u[1]*uu+v[1]*vv, origin[2]+u[2]*uu+v[2]*vv];
+          if (p.every(c => c >= -0.05 && c <= clipBox)) quad.push(p);
+        }
+      }
+      if (quad.length) {
+        const P = quad.map(p => r3.project(p, center));
+        const ctx = r3.ctx;
+        ctx.save();
+        ctx.fillStyle = 'rgba(180,83,9,.14)';
+        ctx.strokeStyle = 'rgba(180,83,9,.55)';
+        ctx.lineWidth = 1;
+        P.forEach(p => { ctx.fillRect(p.x - 2.4, p.y - 2.4, 4.8, 4.8); });
+        ctx.restore();
+      }
+    }
+
+    r3.draw(mesh, center);
+  }
+
+  PL.enableOrbit(cv, r3, draw);
+  document.getElementById('d3faces').addEventListener('change', draw);
+  document.getElementById('d3plane').addEventListener('change', draw);
+  document.getElementById('d3level').addEventListener('input', draw);
+  document.getElementById('d3reset').addEventListener('click', () => {
+    r3.o.rotX = -0.45; r3.o.rotZ = 0.8; draw();
+  });
+  document.getElementById('d3spin').addEventListener('click', () => {
+    spin = !spin;
+    if (spin) {
+      const loop = () => { r3.o.rotZ += 0.008; draw(); if (spin) spinRAF = requestAnimationFrame(loop); };
+      loop();
+    } else if (spinRAF) cancelAnimationFrame(spinRAF);
+  });
+
+  document.getElementById('d3Txt').innerHTML =
+    `Ótimo em <b>(${best.map(x => PL.fmt(x, 2)).join(', ')})</b> com f = <b>${zmax.toFixed(2)}</b>. ` +
+    `O poliedro tem ${V.length} vértices. Ao subir o plano, ele tangencia a região exatamente nesse vértice.`;
+
+  cv.dataset.autofit = '1'; cv._rerender = draw;
+  draw();
+})();
+</script>
+</body>
+</html>

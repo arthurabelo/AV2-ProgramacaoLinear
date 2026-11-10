@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programação Linear — Guia da 2ª Prova</title>
+<meta name="description" content="Guia interativo para a segunda prova de Programação Linear: conjuntos convexos, resolução gráfica, método Simplex e sistemas lineares numéricos.">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="index">
+<div class="shell">
+  <aside class="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><div class="topbar-inner"></div></div>
+    <main class="content">
+
+      <div class="hero">
+        <div class="eyebrow">UFPI · Ciência da Computação · Prof. Ricardo de Andrade</div>
+        <h1>Programação Linear<br>Guia da 2ª Prova</h1>
+        <p>Tudo o que cai na segunda avaliação, com demonstrações interativas: veja a região factível se formar, os vértices mudarem, o tableau do Simplex pivotar e os métodos numéricos convergirem — em 2D e em 3D.</p>
+        <div class="hero-meta">
+          <div><b>Unidade V</b>Conjuntos convexos</div>
+          <div><b>Unidade VII</b>Resolução gráfica</div>
+          <div><b>Unidade VIII</b>Método Simplex</div>
+          <div><b>Extra 02</b>Sistemas lineares</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:0">Mapa do conteúdo</h2>
+      <p class="lead">Nove módulos. Os quatro primeiros constroem a base; os três seguintes são os métodos cobrados na prova; os dois últimos são treino.</p>
+
+      <div class="module-grid">
+        <a class="mod" href="resumo.html">
+          <div class="mod-n">01</div>
+          <span class="card-tag">Consultar rápido</span>
+          <h3>Formulário essencial</h3>
+          <p>Todas as definições, critérios de parada e fórmulas numa página só — feita para imprimir e levar.</p>
+          <div class="mod-tags"><span class="pill gray">imprimível</span><span class="pill accent">fórmulas</span></div>
+        </a>
+
+        <a class="mod" href="convexos.html">
+          <div class="mod-n">02</div>
+          <span class="card-tag">Fundamentação</span>
+          <h3>Conjuntos convexos</h3>
+          <p>Combinação convexa, envoltória convexa, pontos extremos. Monte combinações convexas arrastando os pesos.</p>
+          <div class="mod-tags"><span class="pill accent">2D interativo</span><span class="pill gray">definições</span></div>
+        </a>
+
+        <a class="mod" href="teoremas.html">
+          <div class="mod-n">03</div>
+          <span class="card-tag">Fundamentação</span>
+          <h3>Topologia, Weierstrass e separação</h3>
+          <p>Interior, fronteira, compacto. Por que a solução ótima existe. Hiperplano separador e de suporte.</p>
+          <div class="mod-tags"><span class="pill accent">2D interativo</span><span class="pill gray">provas</span></div>
+        </a>
+
+        <a class="mod" href="grafico.html">
+          <div class="mod-n">04</div>
+          <span class="card-tag">Método</span>
+          <h3>Resolução gráfica 2D &amp; 3D</h3>
+          <p>Desenhe restrições, veja a região factível, a curva de nível e o gradiente. Um poliedro em 3D para entender por que o ótimo é vértice.</p>
+          <div class="mod-tags"><span class="pill accent">2D</span><span class="pill blue">3D</span><span class="pill gray">solver</span></div>
+        </a>
+
+        <a class="mod" href="simplex.html">
+          <div class="mod-n">05</div>
+          <span class="card-tag">Método · o mais cobrado</span>
+          <h3>Método Simplex</h3>
+          <p>Tableau passo a passo: variável que entra, razão mínima, pivô, operações de linha. Inclui casos especiais.</p>
+          <div class="mod-tags"><span class="pill amber">tableau</span><span class="pill accent">passo a passo</span></div>
+        </a>
+
+        <a class="mod" href="duasfases.html">
+          <div class="mod-n">06</div>
+          <span class="card-tag">Método</span>
+          <h3>M Grande &amp; duas fases</h3>
+          <p>Quando não há base óbvia: variáveis artificiais, função objetivo artificial e as duas fases.</p>
+          <div class="mod-tags"><span class="pill amber">tableau</span><span class="pill gray">casos</span></div>
+        </a>
+
+        <a class="mod" href="sistemas.html">
+          <div class="mod-n">07</div>
+          <span class="card-tag">Unidade extra</span>
+          <h3>Sistemas lineares</h3>
+          <p>Gauss, Gauss-Jordan, Jacobi e Gauss-Seidel — com iteração visual e teste de convergência.</p>
+          <div class="mod-tags"><span class="pill blue">iterativo</span><span class="pill gray">numérico</span></div>
+        </a>
+
+        <a class="mod" href="exercicios.html">
+          <div class="mod-n">08</div>
+          <span class="card-tag">Treino</span>
+          <h3>Exercícios resolvidos</h3>
+          <p>Os problemas clássicos do material — fazendeiro, transformadores, brinquedos, petróleo — resolvidos por inteiro.</p>
+          <div class="mod-tags"><span class="pill gray">resolvidos</span></div>
+        </a>
+
+        <a class="mod" href="quiz.html">
+          <div class="mod-n">09</div>
+          <span class="card-tag">Treino</span>
+          <h3>Simulado interativo</h3>
+          <p>Questões de múltipla escolha com correção e explicação. Acompanhe o placar.</p>
+          <div class="mod-tags"><span class="pill accent">quiz</span><span class="pill gray">placar</span></div>
+        </a>
+      </div>
+
+      <h2 id="checklist">Checklist de última hora</h2>
+      <p>Se o tempo estiver curto, esta é a ordem de prioridade — do que mais rende nota para o que menos rende.</p>
+
+      <ol class="step-list">
+        <li>
+          <b>Montar o tableau corretamente.</b>
+          Forma padrão: transforme cada restrição em igualdade com variável de folga. A linha do objetivo é escrita com os coeficientes <em>mudados de sinal</em> (ou, equivalentemente, busca-se o mais negativo). Errar o sinal aqui derruba a questão inteira.
+        </li>
+        <li>
+          <b>Escolher quem entra e quem sai.</b>
+          Entra a variável com maior ganho na função objetivo (na forma de maximização, o coeficiente mais negativo da linha <code>z</code>). Sai a de menor razão <code>bᵢ / aᵢₖ</code> considerando só <code>aᵢₖ &gt; 0</code>.
+        </li>
+        <li>
+          <b>Pivotear sem medo.</b>
+          Divida a linha do pivô pelo pivô (para virar 1) e depois zere a coluna do pivô nas outras linhas. Faça isso linha por linha, devagar.
+        </li>
+        <li>
+          <b>Ler o critério de parada.</b>
+          Todos os coeficientes da linha <code>z</code> são ≥ 0 → ótimo. Se uma variável não-básica tem coeficiente 0 na linha <code>z</code> → soluções múltiplas.
+        </li>
+        <li>
+          <b>Reconhecer os casos especiais.</b>
+          Empate na entrada, empate na saída (degeneração), coluna sem coeficiente positivo → solução ilimitada, variável artificial permanece positiva → inviável.
+        </li>
+        <li>
+          <b>Saber as duas fases.</b>
+          Quando há restrições <code>≥</code> ou <code>=</code>, adicione variáveis artificiais, minimize a soma delas, e só depois volte à função objetivo real.
+        </li>
+        <li>
+          <b>Convexidade e vértices.</b>
+          Decore: a região factível de um PPL é um poliedro convexo; se existe ótimo, existe um ótimo em vértice; vértice = solução básica viável. Isso justifica o Simplex.
+        </li>
+        <li>
+          <b>Sistemas lineares.</b>
+          Gauss (triangular superior), Gauss-Jordan (identidade), Jacobi e Gauss-Seidel. Saiba o critério das linhas (diagonal dominante) e a fórmula de iteração.
+        </li>
+      </ol>
+
+      <div class="note">
+        <span class="callout-title">Como usar este site</span>
+        Os painéis interativos não são decoração: mexer nos controles e observar a região/vértice mudando é o que fixa a intuição. Se o tempo for curto, faça nesta ordem: <a href="simplex.html">Simplex</a> → <a href="resumo.html">Formulário</a> → <a href="quiz.html">Simulado</a> → <a href="grafico.html">Gráfica</a>.
+      </div>
+
+      <h2>O que exatamente cai</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <span class="card-tag">Unidade V — Fundamentação</span>
+          <h4>Conjuntos convexos</h4>
+          <ul class="small" style="padding-left:18px;margin-bottom:0">
+            <li>Definição de conjunto convexo e combinação convexa</li>
+            <li>Envoltória convexa (menor convexo que contém S)</li>
+            <li>Propriedades topológicas: interior, fronteira, fecho, compacto</li>
+            <li>Teorema de Weierstrass (existência de ótimo)</li>
+            <li>Separação e hiperplano de suporte</li>
+            <li>Teorema de Farkas e corolário de Gordan</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="card-tag">Unidade VII — Gráfica</span>
+          <h4>Resolução gráfica</h4>
+          <ul class="small" style="padding-left:18px;margin-bottom:0">
+            <li>Traçar retas de restrição e identificar semiplanos</li>
+            <li>Região factível como interseção de semiplanos</li>
+            <li>Curvas de nível e vetor gradiente</li>
+            <li>Ótimo em vértice; soluções múltiplas (aresta ótima)</li>
+            <li>Inviável e ilimitado geometricamente</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="card-tag">Unidade VIII — Simplex</span>
+          <h4>Método Simplex</h4>
+          <ul class="small" style="padding-left:18px;margin-bottom:0">
+            <li>Forma padrão e variáveis de folga</li>
+            <li>Solução básica viável inicial</li>
+            <li>Tableau, pivoteamento, critérios de entrada/saída</li>
+            <li>Critério de otimalidade e de parada</li>
+            <li>Empates, degeneração, soluções múltiplas</li>
+            <li>M Grande e método das duas fases</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="card-tag">Unidade Extra 02</span>
+          <h4>Sistemas lineares</h4>
+          <ul class="small" style="padding-left:18px;margin-bottom:0">
+            <li>Classificação: possível determinado/indeterminado, impossível</li>
+            <li>Sistemas triangulares e substituição retroativa</li>
+            <li>Eliminação de Gauss e Gauss-Jordan; pivotação</li>
+            <li>Resíduo e refinamento de solução</li>
+            <li>Jacobi e Gauss-Seidel; critério de convergência</li>
+            <li>Mal condicionamento</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="page-nav"></div>
+    </main>
+    <footer class="site-foot">
+      Guia de estudo gerado a partir do material da disciplina — UFPI / DCC / BCC.
+    </footer>
+  </div>
+</div>
+<script src="assets/js/core.js"></script>
+<script>PL.boot();</script>
+</body>
+</html>
